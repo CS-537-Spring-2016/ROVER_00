@@ -16,6 +16,8 @@ import common.MapTile;
 import common.ScanMap;
 import enums.Terrain;
 
+//Checked by Anuradha
+
 /**
  * The seed that this program is built on is a chat program example found here:
  * http://cs.lmu.edu/~ray/notes/javanetexamples/ Many thanks to the authors for
