@@ -148,7 +148,7 @@ public class ROVER_02 {
 			scanMap.debugPrintMap();
 
 			// MOVING
-			
+			// check commit
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 			String nextRadiation = checkRadiationDirection(scanMapTiles);
 			String nextChemical = checkChemicalDirection(scanMapTiles);
