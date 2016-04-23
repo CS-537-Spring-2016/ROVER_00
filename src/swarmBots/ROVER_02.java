@@ -149,7 +149,25 @@ public class ROVER_02 {
 
 			// MOVING
 			
+			MapTile[][] scanMapTiles = scanMap.getScanMap();
+			String nextRadiation = checkRadiationDirection(scanMapTiles);
 			
+			
+			if(nextRadiation!= "V") //There is a radiation nearby
+			{
+				// send message to the nearby rover that a radiation is available at this location
+				// this part of the code has to be written
+			}
+			
+			else
+			{
+				String nextChemical = checkChemicalDirection(scanMapTiles);
+				if(nextChemical!= "V")
+				{
+					// call the near by rover that can extract chemicals
+					// code has to be written
+				}
+			}
 			
 			
 			
@@ -170,7 +188,7 @@ public class ROVER_02 {
 			} else {
 
 				// pull the MapTile array out of the ScanMap object
-				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
@@ -379,7 +397,65 @@ public class ROVER_02 {
 		
 		return false;
 	}
+	
+	//Check which direction has Radiation
+	
+	public String checkRadiationDirection(MapTile[][] scanMapTiles){
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		
+		if(scanMapTiles[x+1][y].getScience().getSciString() == "Y")
+			return "S";
+		else if(scanMapTiles[x-1][y].getScience().getSciString() == "Y")
+			return "N";
+		else if(scanMapTiles[x][y+1].getScience().getSciString() == "Y")
+			return "E";
+		else if(scanMapTiles[x][y-1].getScience().getSciString() == "Y")
+			return "W";
+		else
+			return "V"; //no radiations in any nearby location
+		
+	}
+	
+	//Check which direction has Chemical
+	
+		public String checkChemicalDirection(MapTile[][] scanMapTiles){
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+			int x = centerIndex, y = centerIndex;
+			
+			if(scanMapTiles[x+1][y].getScience().getSciString() == "O")
+				return "S";
+			else if(scanMapTiles[x-1][y].getScience().getSciString() == "O")
+				return "N";
+			else if(scanMapTiles[x][y+1].getScience().getSciString() == "O")
+				return "E";
+			else if(scanMapTiles[x][y-1].getScience().getSciString() == "O")
+				return "W";
+			else
+				return "V"; //no chemicals in any nearby location
+			
+		}
+	
+	
+	//Check for Chemical
+		public boolean checkChemicals(MapTile[][] scanMapTiles, String direction) {
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+			int x = centerIndex, y = centerIndex;
+			if (direction == "S")
+				x = centerIndex + 1;
+			else if (direction == "N")
+				x = centerIndex - 1;
+			else if (direction == "E")
+				y = centerIndex + 1;
+			else
+				y = centerIndex - 1;
 
+			
+			if(scanMapTiles[x][y].getScience().getSciString() == "Y")
+				return true;
+			
+			return false;
+		}
 	
 	
 	/**
