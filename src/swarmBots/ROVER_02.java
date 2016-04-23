@@ -151,22 +151,25 @@ public class ROVER_02 {
 			
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 			String nextRadiation = checkRadiationDirection(scanMapTiles);
+			String nextChemical = checkChemicalDirection(scanMapTiles);
 			
-			
+						
 			if(nextRadiation!= "V") //There is a radiation nearby
 			{
 				// send message to the nearby rover that a radiation is available at this location
 				// this part of the code has to be written
 			}
 			
-			else
-			{
-				String nextChemical = checkChemicalDirection(scanMapTiles);
-				if(nextChemical!= "V")
-				{
+			else if(nextChemical!= "V")
+			{				
 					// call the near by rover that can extract chemicals
 					// code has to be written
-				}
+				
+			}
+			
+			else
+			{
+				// there are no science near by that could be recognized by this rover
 			}
 			
 			
