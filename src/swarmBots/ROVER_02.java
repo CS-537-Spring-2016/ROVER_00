@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
+import enums.Science;
 import enums.Terrain;
 
 //Checked by Anuradha
@@ -147,6 +148,13 @@ public class ROVER_02 {
 			scanMap.debugPrintMap();
 
 			// MOVING
+			
+			
+			
+			
+			
+			
+			
 
 			// try moving east 5 block if blocked
 			if (blocked) {
@@ -353,8 +361,27 @@ public class ROVER_02 {
 	
 	// Check for Radiation
 	
-	
+	public boolean checkRadiations(MapTile[][] scanMapTiles, String direction) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		if (direction == "S")
+			x = centerIndex + 1;
+		else if (direction == "N")
+			x = centerIndex - 1;
+		else if (direction == "E")
+			y = centerIndex + 1;
+		else
+			y = centerIndex - 1;
 
+		//Checks whether there is sand in the  next tile
+		if(scanMapTiles[x][y].getScience().getSciString() == "Y")
+			return true;
+		
+		return false;
+	}
+
+	
+	
 	/**
 	 * Runs the client
 	 */
