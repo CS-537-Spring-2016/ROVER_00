@@ -37,6 +37,11 @@ public class ROVER_02 {
 	int sleepTime;
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
+	
+	String north = "N";
+	String south = "S";
+	String east = "E";
+	String west = "W";
 
 	public ROVER_02() {
 		// constructor
@@ -180,7 +185,7 @@ public class ROVER_02 {
 			// try moving east 5 block if blocked
 			if (blocked) {
 				for (int i = 0; i < 5; i++) {
-					out.println("MOVE S");
+					move(south);
 					// System.out.println("ROVER_00 request move E");
 					Thread.sleep(1100);
 				}
@@ -204,7 +209,7 @@ public class ROVER_02 {
 						blocked = true;
 					} else {
 						// request to server to move
-						out.println("MOVE E");
+						move(east);
 						System.out.println("ROVER_02 request move E");
 					}
 
@@ -221,7 +226,7 @@ public class ROVER_02 {
 						blocked = true;
 					} else {
 						// request to server to move
-						out.println("MOVE W");
+						move(west);
 						System.out.println("ROVER_02 request move W");
 					}
 
@@ -460,6 +465,14 @@ public class ROVER_02 {
 			return false;
 		}
 	
+	// make a move
+		
+		public void move(String direction)
+		{
+			out.println("MOVE " + direction);
+		}
+		
+		
 	
 	/**
 	 * Runs the client
