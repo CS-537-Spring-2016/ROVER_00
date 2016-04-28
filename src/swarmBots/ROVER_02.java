@@ -410,6 +410,7 @@ public class ROVER_02 {
 	
 	public String checkRadiationDirection(MapTile[][] scanMapTiles){
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		
 		int x = centerIndex, y = centerIndex;
 		
 		if(scanMapTiles[x+1][y].getScience().getSciString() == "Y")
