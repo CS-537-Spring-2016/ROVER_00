@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -119,6 +120,12 @@ public class ROVER_02 {
 
 		// start Rover controller process
 		while (true) {
+			
+			// this stores whether the directions are clear to move
+			boolean moveSouth = true;
+			boolean moveNorth = true;
+			boolean moveEast = true;
+			boolean moveWest = true;
 
 			// currently the requirements allow sensor calls to be made with no
 			// simulated resource cost
@@ -364,29 +371,26 @@ public class ROVER_02 {
 		return null;
 	}
 
-	// Check whether the next tile is a sand
-
-	public boolean checkSand(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		if (direction == "S")
-			x = centerIndex + 1;
-		else if (direction == "N")
-			x = centerIndex - 1;
-		else if (direction == "E")
-			y = centerIndex + 1;
-		else
-			y = centerIndex - 1;
-
-		//Checks whether there is sand in the  next tile
-		if(scanMapTiles[x][y].getTerrain() == Terrain.SAND)
-			return true;
-		
-		return false;
+	/**
+	 * Runs the client
+	 */
+	public static void main(String[] args) throws Exception {
+		ROVER_02 client = new ROVER_02();
+		client.run();
 	}
-	
+
+
+	/////////////////////////////////// NEWLY ADDED FUNCTIONS
+	/////////////////////////////////// ////////////////////////////
+
+	// make a move
+
+	public void move(String direction) {
+		out.println("MOVE " + direction);
+	}
+
 	// Check for Radiation
-	
+
 	public boolean checkRadiations(MapTile[][] scanMapTiles, String direction) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
@@ -399,87 +403,112 @@ public class ROVER_02 {
 		else
 			y = centerIndex - 1;
 
-		//Checks whether there is sand in the  next tile
-		if(scanMapTiles[x][y].getScience().getSciString() == "Y")
+		// Checks whether there is sand in the next tile
+		if (scanMapTiles[x][y].getScience().getSciString() == "Y")
 			return true;
-		
+
+		return false;
+	}
+
+	// Check which direction has Radiation
+
+	public String checkRadiationDirection(MapTile[][] scanMapTiles) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+
+		int x = centerIndex, y = centerIndex;
+
+		if (scanMapTiles[x + 1][y].getScience().getSciString() == "Y")
+			return "S";
+		else if (scanMapTiles[x - 1][y].getScience().getSciString() == "Y")
+			return "N";
+		else if (scanMapTiles[x][y + 1].getScience().getSciString() == "Y")
+			return "E";
+		else if (scanMapTiles[x][y - 1].getScience().getSciString() == "Y")
+			return "W";
+		else
+			return "V"; // no radiations in any nearby location
+
+	}
+
+	// Check which direction has Chemical
+
+	public String checkChemicalDirection(MapTile[][] scanMapTiles) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+		if (scanMapTiles[x + 1][y].getScience().getSciString() == "O")
+			return "S";
+		else if (scanMapTiles[x - 1][y].getScience().getSciString() == "O")
+			return "N";
+		else if (scanMapTiles[x][y + 1].getScience().getSciString() == "O")
+			return "E";
+		else if (scanMapTiles[x][y - 1].getScience().getSciString() == "O")
+			return "W";
+		else
+			return "V"; // no chemicals in any nearby location
+
+	}
+
+	// Check for Chemical
+	public boolean checkChemicals(MapTile[][] scanMapTiles, String direction) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		if (direction == "S")
+			x = centerIndex + 1;
+		else if (direction == "N")
+			x = centerIndex - 1;
+		else if (direction == "E")
+			y = centerIndex + 1;
+		else
+			y = centerIndex - 1;
+
+		if (scanMapTiles[x][y].getScience().getSciString() == "Y")
+			return true;
+
+		return false;
+	}
+
+	// check whether there is any obstruction - Rover / Sand
+
+	public boolean nextMovePossible(MapTile[][] scanMapTiles, String direction) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		if (direction == "S")
+			x = centerIndex + 1;
+		else if (direction == "N")
+			x = centerIndex - 1;
+		else if (direction == "E")
+			y = centerIndex + 1;
+		else
+			y = centerIndex - 1;
+
+		//This avoids both the rover and the sand
+		if (scanMapTiles[x][y].getTerrain() != Terrain.SAND && !scanMapTiles[x][y].getHasRover())
+			return true;
+
 		return false;
 	}
 	
-	//Check which direction has Radiation
-	
-	public String checkRadiationDirection(MapTile[][] scanMapTiles){
+	public List<Coord> getScienceLocations(MapTile[][] scanMapTiles, Coord currentLoc)
+	{
+		List<Coord> scienceCoordinates = new ArrayList <Coord>();
+		int n = scanMapTiles.length;
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		
 		int x = centerIndex, y = centerIndex;
 		
-		if(scanMapTiles[x+1][y].getScience().getSciString() == "Y")
-			return "S";
-		else if(scanMapTiles[x-1][y].getScience().getSciString() == "Y")
-			return "N";
-		else if(scanMapTiles[x][y+1].getScience().getSciString() == "Y")
-			return "E";
-		else if(scanMapTiles[x][y-1].getScience().getSciString() == "Y")
-			return "W";
-		else
-			return "V"; //no radiations in any nearby location
-		
-	}
-	
-	//Check which direction has Chemical
-	
-		public String checkChemicalDirection(MapTile[][] scanMapTiles){
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-			int x = centerIndex, y = centerIndex;
-			
-			if(scanMapTiles[x+1][y].getScience().getSciString() == "O")
-				return "S";
-			else if(scanMapTiles[x-1][y].getScience().getSciString() == "O")
-				return "N";
-			else if(scanMapTiles[x][y+1].getScience().getSciString() == "O")
-				return "E";
-			else if(scanMapTiles[x][y-1].getScience().getSciString() == "O")
-				return "W";
-			else
-				return "V"; //no chemicals in any nearby location
-			
-		}
-	
-	
-	//Check for Chemical
-		public boolean checkChemicals(MapTile[][] scanMapTiles, String direction) {
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-			int x = centerIndex, y = centerIndex;
-			if (direction == "S")
-				x = centerIndex + 1;
-			else if (direction == "N")
-				x = centerIndex - 1;
-			else if (direction == "E")
-				y = centerIndex + 1;
-			else
-				y = centerIndex - 1;
-
-			
-			if(scanMapTiles[x][y].getScience().getSciString() == "Y")
-				return true;
-			
-			return false;
-		}
-	
-	// make a move
-		
-		public void move(String direction)
-		{
-			out.println("MOVE " + direction);
-		}
 		
 		
-	
-	/**
-	 * Runs the client
-	 */
-	public static void main(String[] args) throws Exception {
-		ROVER_02 client = new ROVER_02();
-		client.run();
+		for(int i = 0 ; i <n;i++)
+			for(int j =0; j<n;j++)
+			{			
+				
+				if(scanMapTiles[i][j].getScience() == Science.RADIOACTIVE || scanMapTiles[i][j].getScience() == Science.ORGANIC)
+				{
+					
+				}
+			}
+		
+		
+		return scienceCoordinates;
 	}
 }
