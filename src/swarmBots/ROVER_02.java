@@ -38,7 +38,7 @@ public class ROVER_02 {
 	int sleepTime;
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
-	
+
 	String north = "N";
 	String south = "S";
 	String east = "E";
@@ -120,7 +120,7 @@ public class ROVER_02 {
 
 		// start Rover controller process
 		while (true) {
-			
+
 			// this stores whether the directions are clear to move
 			boolean moveSouth = true;
 			boolean moveNorth = true;
@@ -160,34 +160,28 @@ public class ROVER_02 {
 			scanMap.debugPrintMap();
 
 			// MOVING
-			
+
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 			String nextRadiation = checkRadiationDirection(scanMapTiles);
 			String nextChemical = checkChemicalDirection(scanMapTiles);
-			
-						
-			if(nextRadiation!= "V") //There is a radiation nearby
+
+			if (nextRadiation != "V") // There is a radiation nearby
 			{
-				// send message to the nearby rover that a radiation is available at this location
+				// send message to the nearby rover that a radiation is
+				// available at this location
 				// this part of the code has to be written
 			}
-			
-			else if(nextChemical!= "V")
-			{				
-					// call the near by rover that can extract chemicals
-					// code has to be written
-				
+
+			else if (nextChemical != "V") {
+				// call the near by rover that can extract chemicals
+				// code has to be written
+
 			}
-			
-			else
-			{
-				// there are no science near by that could be recognized by this rover
+
+			else {
+				// there are no science near by that could be recognized by this
+				// rover
 			}
-			
-			
-			
-			
-			
 
 			// try moving east 5 block if blocked
 			if (blocked) {
@@ -203,7 +197,7 @@ public class ROVER_02 {
 			} else {
 
 				// pull the MapTile array out of the ScanMap object
-				
+
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
@@ -379,7 +373,6 @@ public class ROVER_02 {
 		client.run();
 	}
 
-
 	/////////////////////////////////// NEWLY ADDED FUNCTIONS
 	/////////////////////////////////// ////////////////////////////
 
@@ -482,33 +475,35 @@ public class ROVER_02 {
 		else
 			y = centerIndex - 1;
 
-		//This avoids both the rover and the sand
+		// This avoids both the rover and the sand
 		if (scanMapTiles[x][y].getTerrain() != Terrain.SAND && !scanMapTiles[x][y].getHasRover())
 			return true;
 
 		return false;
 	}
 	
-	public List<Coord> getScienceLocations(MapTile[][] scanMapTiles, Coord currentLoc)
-	{
-		List<Coord> scienceCoordinates = new ArrayList <Coord>();
+	// returns a list of science locations around the rover
+
+	public List<Coord> getScienceLocations(MapTile[][] scanMapTiles, Coord currentLoc) {
+
+		List<Coord> scienceCoordinates = new ArrayList<Coord>();
 		int n = scanMapTiles.length;
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
-		
-		
-		
-		for(int i = 0 ; i <n;i++)
-			for(int j =0; j<n;j++)
-			{			
-				
-				if(scanMapTiles[i][j].getScience() == Science.RADIOACTIVE || scanMapTiles[i][j].getScience() == Science.ORGANIC)
-				{
+		int startX = currentLoc.xpos - 3;
+		int startY = currentLoc.ypos - 3;
+
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++) {
+
+				if (scanMapTiles[i][j].getScience() == Science.RADIOACTIVE
+						|| scanMapTiles[i][j].getScience() == Science.ORGANIC) {
+
+					scienceCoordinates.add(new Coord(startX + i, startY + j));
 					
 				}
 			}
-		
-		
+
 		return scienceCoordinates;
 	}
 }
