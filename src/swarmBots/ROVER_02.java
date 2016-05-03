@@ -44,7 +44,7 @@ public class ROVER_02 {
 	static final int PORT_ADDRESS = 9537;
 
 	Set<String> scienceLocations = new HashSet<String>();
-	
+
 	String north = "N";
 	String south = "S";
 	String east = "E";
@@ -301,7 +301,7 @@ public class ROVER_02 {
 
 	// check for sand / rover / wall in the next move
 
-	public boolean isValidMove(MapTile[][] scanMapTiles, Coord currentLoc, String direction) {
+	public boolean isValidMove(MapTile[][] scanMapTiles, String direction) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
 
@@ -326,42 +326,46 @@ public class ROVER_02 {
 
 		return true;
 	}
-	
-	
-	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc)
-	{
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		
-		
-		
-	}
-	
+
 	// list of science locations nearby
-	public void scanScience(MapTile[][] scanMapTiles, Coord currentLoc)
-	{
+	public void scanScience(MapTile[][] scanMapTiles, Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
-		
-		int xpos,ypos;
+
+		int xpos, ypos;
 		int coordX = currentLoc.xpos - centerIndex;
 		int coordY = currentLoc.ypos - centerIndex;
-		
-		for(int i=0; i<scanMapTiles.length ; i++)
-		{
-			for(int j=0; j<scanMapTiles.length;j++)
-			{
-				if(scanMapTiles[i][j].getScience() == Science.RADIOACTIVE || scanMapTiles[i][j].getScience() == Science.ORGANIC)
-				{
-					xpos = coordX+i;
-					ypos = coordY+j;
-					scienceLocations.add(scanMapTiles[i][j].getTerrain() + " " + scanMapTiles[i][j].getScience() + " " + xpos + " " + ypos);
+
+		for (int i = 0; i < scanMapTiles.length; i++) {
+			for (int j = 0; j < scanMapTiles.length; j++) {
+				if (scanMapTiles[i][j].getScience() == Science.RADIOACTIVE
+						|| scanMapTiles[i][j].getScience() == Science.ORGANIC) {
+					xpos = coordX + i;
+					ypos = coordY + j;
+					scienceLocations.add(scanMapTiles[i][j].getTerrain() + " " + scanMapTiles[i][j].getScience() + " "
+							+ xpos + " " + ypos);
 				}
 			}
 		}
-		
+
 	}
-	
-	
+
+	// have we reached a wall ??
+
+	public boolean isWall(MapTile[][] scanMapTiles) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+		if (scanMapTiles[x][y].getTerrain() == Terrain.NONE)
+			return true;
+		return false;
+	}
+
+	// Move
+	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+	}
 
 }
