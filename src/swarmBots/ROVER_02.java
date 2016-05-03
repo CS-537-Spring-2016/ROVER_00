@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -95,12 +96,10 @@ public class ROVER_02 {
 
 		int counter = 0;
 
-
 		boolean stuck = false; // just means it did not change locations between
 								// requests,
 								// could be velocity limit or obstruction etc.
 		boolean blocked = false;
-	
 
 		Coord currentLoc = null;
 		Coord previousLoc = null;
@@ -143,9 +142,8 @@ public class ROVER_02 {
 			// MOVING
 
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
-			
-			move(east);
 
+			move(east);
 
 			// another call for current location
 			out.println("LOC");
@@ -158,7 +156,6 @@ public class ROVER_02 {
 			System.out.println("ROVER_02 previousLoc: " + previousLoc);
 
 			// test for stuckness
-		
 
 			System.out.println("ROVER_02 stuck test " + stuck);
 			// System.out.println("ROVER_02 blocked test " + blocked);
@@ -277,9 +274,7 @@ public class ROVER_02 {
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
-		
-		
-		
+
 	}
 
 	/**
@@ -294,10 +289,37 @@ public class ROVER_02 {
 	/////////////////////////////////// ////////////////////////////
 
 	// make a move
-	
-	public void move(String direction)
-	{
-		out.println("MOVE "+direction);
+
+	public void move(String direction) {
+		out.println("MOVE " + direction);
+	}
+
+	// check for sand / rover / wall in the next move
+
+	public boolean isValidMove(MapTile[][] scanMapTiles, Coord currentLoc, String direction) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+		switch (direction) {
+		case "N":
+			y = y - 1;
+			break;
+		case "S":
+			y = y + 1;
+			break;
+		case "E":
+			x = x + 1;
+			break;
+		case "W":
+			x = x - 1;
+			break;
+		}
+
+		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
+				|| scanMapTiles[x][y].getHasRover() == true)
+			return false;
+
+		return true;
 	}
 
 }
