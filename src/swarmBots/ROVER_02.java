@@ -361,6 +361,26 @@ public class ROVER_02 {
 		return false;
 	}
 
+	//if blocked / stuck change the direction
+	public String switchDirectionWall(MapTile[][] scanMapTiles, String direction)
+	{
+		switch(direction)
+		{
+		case "E":
+			return south;
+		case "S":
+			return west;
+		case "N":
+			return east;
+		case "W":
+			return north;
+		default:
+			return null;
+			
+		}
+	}
+	
+	
 	// Move
 	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
