@@ -95,37 +95,18 @@ public class ROVER_02 {
 
 		int counter = 0;
 
-		boolean goingSouth = false;
-		boolean goingEast = false;
-
-		// New Edit
-		boolean goingNorth = false;
-		boolean goingWest = false;
-		// New Edit end
 
 		boolean stuck = false; // just means it did not change locations between
 								// requests,
 								// could be velocity limit or obstruction etc.
 		boolean blocked = false;
+	
 
-		String[] cardinals = new String[4];
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
-
-		String currentDir = cardinals[0];
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
 		// start Rover controller process
 		while (true) {
-
-			// this stores whether the directions are clear to move
-			boolean moveSouth = true;
-			boolean moveNorth = true;
-			boolean moveEast = true;
-			boolean moveWest = true;
 
 			// currently the requirements allow sensor calls to be made with no
 			// simulated resource cost
@@ -162,88 +143,9 @@ public class ROVER_02 {
 			// MOVING
 
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
-
-			moveSouth = nextMovePossible(scanMapTiles, south);
-			moveNorth = nextMovePossible(scanMapTiles, north);
-			moveEast = nextMovePossible(scanMapTiles, east);
-			moveWest = nextMovePossible(scanMapTiles, west);
-			//
-			// if (moveSouth) {
-			//
-			// out.println("MOVE S");
-			// System.out.println("South");
-			// } else if (moveEast) {
-			// out.println("MOVE E");
-			// System.out.println("East");
-			// } else if (moveWest) {
-			// out.println("MOVE W");
-			// System.out.println("West");
-			// } else {
-			// out.println("MOVE N");
-			// System.out.println("North");
-			// }
-
 			
-			if (stuck) {
-				for (int i = 0; i < 5; i++) {
-					if (nextMovePossible(scanMapTiles, "S")) {
-						move(south);
-						 System.out.println("ROVER_00 request move S");
-						Thread.sleep(1100);
-					}
-				}
-				stuck = false;
-				// reverses direction after being blocked
-				goingEast = !goingEast;
+			move(east);
 
-			} else {
-
-				// pull the MapTile array out of the ScanMap object
-
-				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
-
-				if (goingEast) {
-					// check scanMap to see if path is blocked to the south
-					// (scanMap may be old data by now)
-//					if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
-//							|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND
-//							|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE) {
-//						System.out.println("Stuck set true ..............");
-//						stuck = true;
-//					} 
-					//else {
-						// request to server to move
-						if (nextMovePossible(scanMapTiles, "E")) {
-							move(east);
-							System.out.println("ROVER_02 request move E");
-						}
-					//}
-
-				} else {
-					// check scanMap to see if path is blocked to the north
-					// (scanMap may be old data by now)
-					System.out.println("ROVER_02 scanMapTiles[2][1].getHasRover() " + scanMapTiles[2][1].getHasRover());
-					System.out.println(
-							"ROVER_02 scanMapTiles[2][1].getTerrain() " + scanMapTiles[2][1].getTerrain().toString());
-
-//					if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
-//							|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND
-//							|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE) {
-//						System.out.println("Stuck set true ..............");
-//						stuck = true;
-//					} else {
-						// request to server to move
-						if (nextMovePossible(scanMapTiles, "W")) {
-							move(west);
-							System.out.println("ROVER_02 request move W");
-						}
-					//}
-
-				}
-			//	stuck = currentLoc.equals(previousLoc);
-
-			}
 
 			// another call for current location
 			out.println("LOC");
@@ -363,7 +265,7 @@ public class ROVER_02 {
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 	}
 
-	// this takes the LOC response string, parses out the x and x values and
+	// this takes the LOC response string, parses out the x and y values and
 	// returns a Coord object
 	public static Coord extractLOC(String sStr) {
 		sStr = sStr.substring(4);
@@ -375,6 +277,9 @@ public class ROVER_02 {
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
+		
+		
+		
 	}
 
 	/**
@@ -389,156 +294,10 @@ public class ROVER_02 {
 	/////////////////////////////////// ////////////////////////////
 
 	// make a move
-
-	public void move(String direction) {
-		out.println("MOVE " + direction);
+	
+	public void move(String direction)
+	{
+		out.println("MOVE "+direction);
 	}
 
-	// Check for Radiation
-
-	public boolean checkRadiations(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		if (direction == "S")
-			x = centerIndex + 1;
-		else if (direction == "N")
-			x = centerIndex - 1;
-		else if (direction == "E")
-			y = centerIndex + 1;
-		else
-			y = centerIndex - 1;
-
-		// Checks whether there is sand in the next tile
-		if (scanMapTiles[x][y].getScience().getSciString() == "Y")
-			return true;
-
-		return false;
-	}
-
-	// Check which direction has Radiation
-
-	public String checkRadiationDirection(MapTile[][] scanMapTiles) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
-		int x = centerIndex, y = centerIndex;
-
-		if (scanMapTiles[x + 1][y].getScience().getSciString() == "Y")
-			return "S";
-		else if (scanMapTiles[x - 1][y].getScience().getSciString() == "Y")
-			return "N";
-		else if (scanMapTiles[x][y + 1].getScience().getSciString() == "Y")
-			return "E";
-		else if (scanMapTiles[x][y - 1].getScience().getSciString() == "Y")
-			return "W";
-		else
-			return "V"; // no radiations in any nearby location
-
-	}
-
-	// Check which direction has Chemical
-
-	public String checkChemicalDirection(MapTile[][] scanMapTiles) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-
-		if (scanMapTiles[x + 1][y].getScience().getSciString() == "O")
-			return "S";
-		else if (scanMapTiles[x - 1][y].getScience().getSciString() == "O")
-			return "N";
-		else if (scanMapTiles[x][y + 1].getScience().getSciString() == "O")
-			return "E";
-		else if (scanMapTiles[x][y - 1].getScience().getSciString() == "O")
-			return "W";
-		else
-			return "V"; // no chemicals in any nearby location
-
-	}
-
-	// Check for Chemical
-	public boolean checkChemicals(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		if (direction == "S")
-			x = centerIndex + 1;
-		else if (direction == "N")
-			x = centerIndex - 1;
-		else if (direction == "E")
-			y = centerIndex + 1;
-		else
-			y = centerIndex - 1;
-
-		if (scanMapTiles[x][y].getScience().getSciString() == "Y")
-			return true;
-
-		return false;
-	}
-
-	// check whether there is any obstruction - Rover / Sand
-
-	public boolean nextMovePossible(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		if (direction == "S")
-			x = centerIndex + 1;
-		else if (direction == "N")
-			x = centerIndex - 1;
-		else if (direction == "E")
-			y = centerIndex + 1;
-		else
-			y = centerIndex - 1;
-
-		//System.out.println("Terrain " + scanMapTiles[x][y].getTerrain());
-		//System.out.println("Has Rover " + scanMapTiles[x][y].getHasRover());
-
-		// This avoids both the rover and the sand
-		if (scanMapTiles[x][y].getTerrain().toString() != "SAND" && !scanMapTiles[x][y].getHasRover()
-				&& scanMapTiles[x][y].getTerrain().toString() != "NONE")
-			return true;
-
-		return false;
-	}
-
-	// returns a list of science locations around the rover
-
-	public List<Coord> getScienceLocations(MapTile[][] scanMapTiles, Coord currentLoc) {
-
-		List<Coord> scienceCoordinates = new ArrayList<Coord>();
-		int n = scanMapTiles.length;
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		int startX = currentLoc.xpos - 3;
-		int startY = currentLoc.ypos - 3;
-
-		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n; j++) {
-
-				if (scanMapTiles[i][j].getScience() == Science.RADIOACTIVE
-						|| scanMapTiles[i][j].getScience() == Science.ORGANIC) {
-
-					scienceCoordinates.add(new Coord(startX + i, startY + j));
-
-				}
-			}
-
-		return scienceCoordinates;
-	}
-
-	// returns the previous move
-	public String previousDirection(MapTile[][] scanMapTiles, Coord currentLoc, Coord previousLoc) {
-		if (currentLoc.equals(previousLoc))
-			return "SAME";
-		else if (currentLoc.xpos == previousLoc.xpos) {
-			if (currentLoc.ypos < previousLoc.ypos) {
-				return "E";
-			} else {
-				return "W";
-			}
-		} else {
-			if (currentLoc.xpos < previousLoc.xpos) {
-				return "S";
-			} else {
-				return "N";
-			}
-		}
-	}
 }
