@@ -7,7 +7,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,6 +18,7 @@ import com.google.gson.reflect.TypeToken;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
+import common.ScienceCoord;
 import enums.Science;
 import enums.Terrain;
 
@@ -40,6 +43,8 @@ public class ROVER_02 {
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
 
+	Set<String> scienceLocations = new HashSet<String>();
+	
 	String north = "N";
 	String south = "S";
 	String east = "E";
@@ -321,5 +326,42 @@ public class ROVER_02 {
 
 		return true;
 	}
+	
+	
+	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc)
+	{
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		
+		
+		
+	}
+	
+	// list of science locations nearby
+	public void scanScience(MapTile[][] scanMapTiles, Coord currentLoc)
+	{
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		
+		int xpos,ypos;
+		int coordX = currentLoc.xpos - centerIndex;
+		int coordY = currentLoc.ypos - centerIndex;
+		
+		for(int i=0; i<scanMapTiles.length ; i++)
+		{
+			for(int j=0; j<scanMapTiles.length;j++)
+			{
+				if(scanMapTiles[i][j].getScience() == Science.RADIOACTIVE || scanMapTiles[i][j].getScience() == Science.ORGANIC)
+				{
+					xpos = coordX+i;
+					ypos = coordY+j;
+					scienceLocations.add(scanMapTiles[i][j].getTerrain() + " " + scanMapTiles[i][j].getScience() + " " + xpos + " " + ypos);
+				}
+			}
+		}
+		
+	}
+	
+	
 
 }
