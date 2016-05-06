@@ -54,6 +54,7 @@ public class Rover {
 		//stores the current timestamp
 		this.lastMoveTime = System.currentTimeMillis();
 		this.lastRequestTime = System.currentTimeMillis();
+	
 	}
 	
 	public RoverName getRoverName(){

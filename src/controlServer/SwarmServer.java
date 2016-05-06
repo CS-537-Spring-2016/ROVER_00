@@ -1,4 +1,5 @@
 package controlServer;
+
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -222,23 +223,30 @@ public class SwarmServer {
                 //System.out.println("SWARM: make a rover name " + rname);
                 Rover rover = new Rover(rname);
                 
-                
+                System.out.println("out of rover class");
                 
                 // ##### Run the Rover server process #####
                 while (roversAreGO) {	
+                	
+                	
                 	//read command input from the Rover
                     String input = in.readLine();
+                    
 
                     //condition the input to empty string if null
                     if (input == null) {
+                    	
                     	input = "";
                     }
+                    
                     
                     // check requests per second
                     // if rover is too greedy drop their connection - checks how many total requests have been made in the last second
                     long roverServerRequestsPerSecond = rover.getRoverRequestCount();
                    	
+                    
                     if(roverServerRequestsPerSecond > CALLS_PER_SECOND_LIMIT){
+                    	System.out.println("inside if");
                     	System.out.println("SWARM_"+roverNameString+ "_thread: too many requests per second - dropping connection");
                     	in.close();
                     	socket.close();
