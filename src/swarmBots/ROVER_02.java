@@ -35,6 +35,8 @@ import enums.Terrain;
 
 public class ROVER_02 {
 
+	Coord[] targetLocations = new Coord[3];
+	int i = 0;
 	BufferedReader in;
 	PrintWriter out;
 	String rovername;
@@ -49,6 +51,7 @@ public class ROVER_02 {
 	String south = "S";
 	String east = "E";
 	String west = "W";
+	String direction = west;
 
 	public ROVER_02() {
 		// constructor
@@ -109,6 +112,23 @@ public class ROVER_02 {
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
+		targetLocations[0] = new Coord(0, 0);
+
+		out.println("START_LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println("ROVER_02 check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			Coord Loc = extractLOC(line);
+			targetLocations[2] = new Coord(Loc.xpos, Loc.ypos);
+		}
+
+		// targetLocations[1] = new Coord(50, 50);
+		// targetLocations[2] = new Coord(5, 5);
+
 		// start Rover controller process
 		while (true) {
 
@@ -148,8 +168,7 @@ public class ROVER_02 {
 
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 
-			move(east);
-
+			make_a_move(scanMapTiles, currentLoc);
 			// another call for current location
 			out.println("LOC");
 			line = in.readLine();
@@ -352,20 +371,32 @@ public class ROVER_02 {
 
 	// have we reached a wall ??
 
-	public boolean isWall(MapTile[][] scanMapTiles) {
+	public boolean isWall(MapTile[][] scanMapTiles, String direction) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
+		switch (direction) {
+		case "N":
+			y = y - 1;
+			break;
+		case "S":
+			y = y + 1;
+			break;
+		case "E":
+			x = x + 1;
+			break;
+		case "W":
+			x = x - 1;
+			break;
+		}
 
 		if (scanMapTiles[x][y].getTerrain() == Terrain.NONE)
 			return true;
 		return false;
 	}
 
-	//if blocked / stuck change the direction
-	public String switchDirectionWall(MapTile[][] scanMapTiles, String direction)
-	{
-		switch(direction)
-		{
+	// if blocked / stuck change the direction
+	public String switchDirection(MapTile[][] scanMapTiles, String direction) {
+		switch (direction) {
 		case "E":
 			return south;
 		case "S":
@@ -376,16 +407,83 @@ public class ROVER_02 {
 			return north;
 		default:
 			return null;
-			
+
 		}
 	}
 	
 	
+	public String switchDirectionEdge(MapTile[][] scanMapTiles, String direction) {
+		switch (direction) {
+		case "E":
+			return south;
+		case "S":
+			return west;
+		case "N":
+			return east;
+		case "W":
+			return north;
+		default:
+			return null;
+
+		}
+	}
+
 	// Move
-	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) {
+	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) throws IOException {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
+		scanScience(scanMapTiles, currentLoc);
 
+//		out.println("TIMER");
+//		String line = in.readLine();
+//		int time = 0;
+//		if (line == null) {
+//			System.out.println(rovername + " check connection to server");
+//			line = "";
+//		}
+//		if (line.startsWith("TIMER")) {
+//			String timeRemaining = line.substring(6);
+//			time = Integer.parseInt(timeRemaining);
+//			System.out.println(rovername + " timeRemaining: " + timeRemaining);
+//		}
+//
+//		if (time <= 120000) {
+//			i = 2;
+//		}
+
+		if (i == 2) {
+
+			int cx = currentLoc.xpos, cy = currentLoc.ypos;
+			int tx = targetLocations[i].xpos, ty = targetLocations[i].ypos;
+
+			if (tx == cx && cy == ty)
+				i++;
+
+			if (cx > tx) {
+				direction = west;
+			}
+
+			else if (cx < tx) {
+				direction = east;
+			} else if (cy > ty) {
+				direction = north;
+			} else if (cy < ty) {
+				direction = south;
+			}
+
+		}
+
+		if (isValidMove(scanMapTiles, direction)) {
+			move(direction);
+
+		} else {
+
+			while (!isValidMove(scanMapTiles, direction)) {
+
+				direction = switchDirection(scanMapTiles, direction);
+			}
+			move(direction);
+		}
 	}
 
 }
