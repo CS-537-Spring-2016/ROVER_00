@@ -142,7 +142,7 @@ public class ROVER_02 {
 			// MOVING
 
 			// try moving east 5 block if blocked
-			if (blocked) {
+			if (blocked) {//check if rover is blocked
 				for (int i = 0; i < 5; i++) {
 					out.println("MOVE S");
 					//System.out.println("ROVER_00 request move E");
