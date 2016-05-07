@@ -18,7 +18,7 @@ import common.ScanMap;
 import enums.Science;
 import enums.Terrain;
 
-//checking commit
+
 //Checked by Anuradha
 
 /**
