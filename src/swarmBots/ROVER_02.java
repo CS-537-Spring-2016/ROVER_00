@@ -1,10 +1,13 @@
 package swarmBots;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,9 +19,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import common.Coord;
+import common.Group;
 import common.MapTile;
 import common.ScanMap;
-import common.ScienceCoord;
+//import common.ScienceCoord;
 import enums.Science;
 import enums.Terrain;
 
@@ -47,11 +51,33 @@ public class ROVER_02 {
 
 	Set<String> scienceLocations = new HashSet<String>();
 
+	// all the sockets of blue team - output
+	List<Socket> outputSockets = new ArrayList<Socket>();
+
+	// objects contains each rover IP, port, and name
+	List<Group> blue = new ArrayList<Group>();
+
+	// every science detected will be added in to this set
+	Set<Coord> science_discovered = new HashSet<Coord>();
+
+	// this set contains all the science the ROVERED has shared
+	// thus whatever thats in science_collection that is not in display_science
+	// are "new" and "unshared"
+	Set<Coord> displayed_science = new HashSet<Coord>();
+
+	// ROVER current location
+	Coord roverLoc;
+
+	// Your ROVER is going to listen for connection with this
+	ServerSocket listenSocket;
+
 	String north = "N";
 	String south = "S";
 	String east = "E";
 	String west = "W";
 	String direction = west;
+	
+	
 
 	public ROVER_02() {
 		// constructor
@@ -71,6 +97,61 @@ public class ROVER_02 {
 		sleepTime = 200; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
+	
+	
+	/**
+	 * Try to connect each socket on a separate thread. Will try until it works.
+	 * When socket is created, save it to a LIST
+	 *
+	 */
+	class RoverComm implements Runnable {
+
+		String ip;
+		int port;
+		Socket socket;
+
+		public RoverComm(String ip, int port) {
+			this.ip = ip;
+			this.port = port;
+		}
+
+		@Override
+		public void run() {
+			do {
+				try {
+					socket = new Socket(ip, port);
+				} catch (UnknownHostException e) {
+
+				} catch (IOException e) {
+
+				}
+			} while (socket == null);
+			
+			outputSockets.add(socket);
+			System.out.println(socket.getPort() + " " + socket.getInetAddress());
+		}
+
+	}
+	
+	/**
+	 * add all the group's rover into a LIST
+	 */
+	public void initConnection() {
+        // dummy value # 1
+        blue.add(new Group("Dummy Group #1", "localhost", 53799));
+
+        // blue rooster
+        blue.add(new Group("GROUP_01", "localhost", 53701));
+        blue.add(new Group("GROUP_03", "localhost", 53703));
+        blue.add(new Group("GROUP_04", "localhost", 53704));
+        blue.add(new Group("GROUP_05", "localhost", 53705));
+        blue.add(new Group("GROUP_06", "localhost", 53706));
+        blue.add(new Group("GROUP_07", "localhost", 53707));
+        blue.add(new Group("GROUP_08", "localhost", 53708));
+        blue.add(new Group("GROUP_09", "localhost", 53709));
+    }
+	
+	
 
 	/**
 	 * Connects to the server then enters the processing loop.
@@ -83,6 +164,16 @@ public class ROVER_02 {
 																	// here
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
+		
+		/*
+		 * connect to all the ROVERS on a separate thread
+		 */
+        initConnection();
+        for (Group group : blue) {
+            new Thread(new RoverComm(group.ip, group.port)).start();
+        }
+        
+        
 
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -145,6 +236,9 @@ public class ROVER_02 {
 			if (line.startsWith("LOC")) {
 				// loc = line.substring(4);
 				currentLoc = extractLOC(line);
+				
+				// class variable
+				roverLoc = extractLOC(line);
 			}
 			System.out.println("ROVER_02 currentLoc at start: " + currentLoc);
 
@@ -163,6 +257,14 @@ public class ROVER_02 {
 			// System.out.println("ROVER_02 sending SCAN request");
 			this.doScan();
 			scanMap.debugPrintMap();
+			
+			// ****************** Check scan map for science and shared them ***********************
+			
+			detectScience(scanMap.getScanMap());
+			System.out.println("SCIENCE DISCOVERED: " + science_discovered);
+			shareScience();
+			
+			// *********************************************************************
 
 			// MOVING
 
@@ -194,6 +296,44 @@ public class ROVER_02 {
 	}
 
 	// ################ Support Methods ###########################
+	
+	
+	/**
+	 * iterate through a scan map to find a tile with Radiation || Chemical. get the
+	 * adjusted (absolute) coordinate of the tile and added into a hash set
+	 */
+	private void detectScience(MapTile[][] scanMapTiles) {
+		for (int x = 0; x < scanMapTiles.length; x++) {
+			for (int y = 0; y < scanMapTiles[x].length; y++) {
+				MapTile mapTile = scanMapTiles[x][y];
+				if (mapTile.getScience() == Science.RADIOACTIVE || mapTile.getScience() == Science.ORGANIC) {
+					int tileX = roverLoc.xpos + (x - 3);
+					int tileY = roverLoc.ypos + (y - 3);
+					Coord coord = new Coord(mapTile.getTerrain(), mapTile.getScience(), tileX, tileY);
+					science_discovered.add(coord);
+				}
+			}
+		}
+	}
+	
+	
+	/**
+	 * write to each rover the coords of a tile that contains radiation. will
+	 * only write to them if the coords are new.
+	 */
+	private void shareScience() {
+		for (Coord c : science_discovered) {
+			if (!displayed_science.contains(c)) {
+				for (Socket s : outputSockets)
+					try {
+						new DataOutputStream(s.getOutputStream()).writeBytes(c.toString() + "\r\n");
+					} catch (Exception e) {
+
+					}
+				displayed_science.add(c);
+			}
+		}
+	}
 
 	private void clearReadLineBuffer() throws IOException {
 		while (in.ready()) {
