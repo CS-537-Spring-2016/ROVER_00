@@ -83,8 +83,9 @@ public class ROVER_02 {
 		while (true) {
 			String line = in.readLine();
 			if (line.startsWith("SUBMITNAME")) {
-				out.println(rovername); // This sets the name of this instance
+				out.println(rovername); //This sets the name of this instance
 										// of a swarmBot for identifying the
+				
 										// thread to the server
 				break;
 			}
