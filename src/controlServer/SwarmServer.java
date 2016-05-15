@@ -471,7 +471,7 @@ public class SwarmServer {
 			// length of a side of the scan map array !!! must be odd number !!!
 			int scanRange = STANDARD_SCANMAP_RANGE;
 			// Adjust scanMap range with use of scan range booster
-			if(thisRover.getTool_1() == RoverToolType.RANGE_BOOTER || thisRover.getTool_2() == RoverToolType.RANGE_BOOTER){
+			if(thisRover.getTool_1() == RoverToolType.RANGE_BOOSTER || thisRover.getTool_2() == RoverToolType.RANGE_BOOSTER){
 				scanRange = BOOSTED_SCANMAP_RANGE;
 			}
 

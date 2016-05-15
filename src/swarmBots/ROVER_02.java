@@ -18,7 +18,11 @@ import com.google.gson.reflect.TypeToken;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
-import common.ScienceCoord;
+//import common.ScienceCoord;
+import communication.Group;
+import communication.RoverCommunication;
+import enums.RoverDriveType;
+import enums.RoverToolType;
 import enums.Science;
 import enums.Terrain;
 
@@ -52,6 +56,9 @@ public class ROVER_02 {
 	String east = "E";
 	String west = "W";
 	String direction = west;
+	
+	/* Communication Module*/
+    RoverCommunication rocom;
 
 	public ROVER_02() {
 		// constructor
@@ -83,7 +90,21 @@ public class ROVER_02 {
 																	// here
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
+		
+		// ******************* SET UP COMMUNICATION MODULE by Shay *********************
+        /* Your Group Info*/
+        Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER,
+                RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
 
+        /* Setup communication, only communicates with gatherers */
+        rocom = new RoverCommunication(group,
+                Group.getGatherers(Group.blueCorp(SERVER_ADDRESS)));
+
+        /* Connect to the other ROVERS */
+        rocom.run();
+
+        // ******************************************************************
+        
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		// Process all messages from server, wait until server requests Rover ID
@@ -183,6 +204,10 @@ public class ROVER_02 {
 
 			System.out.println("ROVER_02 stuck test " + stuck);
 			// System.out.println("ROVER_02 blocked test " + blocked);
+			
+            /* ********* Detect and Share Science  by Shay ***************/
+            rocom.detectAndShare(scanMap.getScanMap(), currentLoc, 3);
+            /* *************************************************/
 
 			Thread.sleep(sleepTime);
 
