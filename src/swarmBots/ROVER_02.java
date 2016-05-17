@@ -35,6 +35,7 @@ import enums.Terrain;
 
 public class ROVER_02 {
 
+	boolean[] paths = new boolean[4]; // N,E,W,S
 	Coord currentLoc = null;
 	Coord previousLoc = null;
 
@@ -199,8 +200,8 @@ public class ROVER_02 {
 
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 
-			 make_a_move(scanMapTiles);
-		//	moving(scanMapTiles);
+			make_a_move(scanMapTiles);
+			// moving(scanMapTiles);
 
 			// another call for current location
 			out.println("LOC");
@@ -351,34 +352,6 @@ public class ROVER_02 {
 
 	public void move(String direction) {
 		out.println("MOVE " + direction);
-	}
-
-	// check for sand / rover / wall in the next move
-
-	public boolean isValidMove(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-
-		switch (direction) {
-		case "N":
-			y = y - 1;
-			break;
-		case "S":
-			y = y + 1;
-			break;
-		case "E":
-			x = x + 1;
-			break;
-		case "W":
-			x = x - 1;
-			break;
-		}
-
-		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
-				|| scanMapTiles[x][y].getHasRover() == true)
-			return false;
-
-		return true;
 	}
 
 	// list of science locations nearby
@@ -540,19 +513,36 @@ public class ROVER_02 {
 
 	}
 
+	public void possiblePaths(MapTile[][] scanMapTiles) {
+		paths[0] = isValidMove(scanMapTiles, "N");
+		paths[1] = isValidMove(scanMapTiles, "E");
+		paths[2] = isValidMove(scanMapTiles, "W");
+		paths[3] = isValidMove(scanMapTiles, "S");
+
+	}
+
 	public int isAWall(MapTile[][] scanMapTiles) {
 		int c = 0;
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
 
-		if (scanMapTiles[x - 1][y].getTerrain() == Terrain.NONE)
+		if (scanMapTiles[x - 1][y].getTerrain() == Terrain.NONE) {
+			System.out.println("WAll left");
 			c++;
-		if (scanMapTiles[x][y - 1].getTerrain() == Terrain.NONE)
+		}
+
+		if (scanMapTiles[x][y - 1].getTerrain() == Terrain.NONE) {
+			System.out.println("WAll up");
 			c++;
-		if (scanMapTiles[x + 1][y].getTerrain() == Terrain.NONE)
+		}
+		if (scanMapTiles[x + 1][y].getTerrain() == Terrain.NONE) {
+			System.out.println("WAll right");
 			c++;
-		if (scanMapTiles[x][y + 1].getTerrain() == Terrain.NONE)
+		}
+		if (scanMapTiles[x][y + 1].getTerrain() == Terrain.NONE) {
+			System.out.println("WAll down");
 			c++;
+		}
 		return c;
 	}
 
@@ -579,18 +569,50 @@ public class ROVER_02 {
 
 	}
 
+	// check for sand / rover / wall in the next move
+
+	public boolean isValidMove(MapTile[][] scanMapTiles, String direction) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+		switch (direction) {
+		case "N":
+			y = y - 1;
+			break;
+		case "S":
+			y = y + 1;
+			break;
+		case "E":
+			x = x + 1;
+			break;
+		case "W":
+			x = x - 1;
+			break;
+		}
+
+		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
+				|| scanMapTiles[x][y].getHasRover() == true)
+			return false;
+
+		return true;
+	}
+
 	public void moving(MapTile[][] scanMapTiles) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
+		possiblePaths(scanMapTiles);
+
 		currentDir = west;
+		
+		
 		if (isValidMove(scanMapTiles, currentDir)) {
-			nextDir = west;
+			// nextDir = west;
 			move(currentDir);
 		} else {
 			oneDeviation_West(scanMapTiles);
 			move(currentDir);
 		}
-
+		currentDir = nextDir;
 	}
 
 	// Move
@@ -600,28 +622,6 @@ public class ROVER_02 {
 		scanScience(scanMapTiles);
 		System.out.println("SCIENCE DISCOVERED: " + science_discovered);
 		shareScience();
-		//
-		// if (i == 2) {
-		//
-		// int cx = currentLoc.xpos, cy = currentLoc.ypos;
-		// int tx = targetLocations[i].xpos, ty = targetLocations[i].ypos;
-		//
-		// if (tx == cx && cy == ty)
-		// i++;
-		//
-		// if (cx > tx) {
-		// direction = west;
-		// }
-		//
-		// else if (cx < tx) {
-		// direction = east;
-		// } else if (cy > ty) {
-		// direction = north;
-		// } else if (cy < ty) {
-		// direction = south;
-		// }
-		//
-		// }
 
 		if (isValidMove(scanMapTiles, direction)) {
 			move(direction);
