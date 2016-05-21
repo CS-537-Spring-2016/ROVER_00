@@ -66,13 +66,14 @@ public class ROVER_00 {
 
 		// Process all messages from server, wait until server requests Rover ID
 		// name
+		
 		while (true) {
 			String line = in.readLine();
 			if (line.startsWith("SUBMITNAME")) {
 				out.println(rovername); // This sets the name of this instance
 										// of a swarmBot for identifying the
 										// thread to the server
-				break;
+		 break;
 			}
 		}
 
@@ -144,7 +145,9 @@ public class ROVER_00 {
 					out.println("MOVE E");
 					//System.out.println("ROVER_00 request move E");
 					Thread.sleep(300);
+				
 				}
+				
 				blocked = false;
 				//reverses direction after being blocked
 				goingSouth = !goingSouth;
@@ -185,6 +188,7 @@ public class ROVER_00 {
 					}					
 				}
 			}
+			
 
 			// another call for current location
 			out.println("LOC");
