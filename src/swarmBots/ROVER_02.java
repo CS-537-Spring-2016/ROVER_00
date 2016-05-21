@@ -35,6 +35,7 @@ import enums.Terrain;
 
 public class ROVER_02 {
 
+	int timeremaining = 0;
 	boolean[] paths = new boolean[4]; // N,E,W,S
 	Coord currentLoc = null;
 	Coord previousLoc = null;
@@ -166,6 +167,10 @@ public class ROVER_02 {
 			targetLoc = Loc;
 
 		}
+
+		out.println("TIMER");
+		line = in.readLine();
+		timeremaining = Integer.parseInt(line);
 
 		// start Rover controller process
 		while (true) {
@@ -603,8 +608,7 @@ public class ROVER_02 {
 		possiblePaths(scanMapTiles);
 
 		currentDir = west;
-		
-		
+
 		if (isValidMove(scanMapTiles, currentDir)) {
 			// nextDir = west;
 			move(currentDir);
@@ -635,6 +639,86 @@ public class ROVER_02 {
 			move(direction);
 
 		}
+	}
+
+	// Reverse move
+
+	public void makeAReverseMove(MapTile[][] scanMapTiles) throws IOException {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		scanScience(scanMapTiles);
+		System.out.println("SCIENCE DISCOVERED: " + science_discovered);
+		shareScience();
+		double[][] distance = nearestTileToTarget(scanMapTiles, startLoc);
+		Coord nextTargetCoord;
+
+		nextTargetCoord = largestinArray(scanMapTiles, distance);
+		
+		// continue here ...
+		// implement a star in a different file
+		//change the nodes to coord
+		//use it to find the path required
+
+	}
+
+	public Coord largestinArray(MapTile[][] scanMapTiles, double[][] distance) {
+		Coord coord = null;
+		double max = 0;
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		int xpos, ypos;
+
+		int coordX = currentLoc.xpos - centerIndex;
+		int coordY = currentLoc.ypos - centerIndex;
+
+		for (int i = 0; i < 7; i++) {
+			for (int j = 0; j < 7; j++) {
+				if (max < distance[i][j] && isValidTile(scanMapTiles, i, j)  ) {
+					xpos = coordX + i;
+					ypos = coordY + j;
+					max = distance[i][j];
+					coord = new Coord(xpos, ypos);
+				}
+			}
+		}
+		return coord;
+	}
+
+	public double[][] nearestTileToTarget(MapTile[][] scanMapTiles, Coord TargetLoc) throws IOException {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		int xpos, ypos;
+
+		int coordX = currentLoc.xpos - centerIndex;
+		int coordY = currentLoc.ypos - centerIndex;
+
+		int targetX = TargetLoc.xpos;
+		int targetY = TargetLoc.ypos;
+
+		double[][] distance = null;
+
+		for (int i = 0; i < scanMapTiles.length; i++) {
+			for (int j = 0; j < scanMapTiles.length; j++) {
+
+				xpos = coordX + i;
+				ypos = coordY + j;
+
+				distance[i][j] = Math.sqrt((targetX - xpos) * (targetX - xpos) + (targetY - ypos) * (targetY - ypos));
+			}
+		}
+
+		return distance;
+
+	}
+
+	public boolean isValidTile(MapTile[][] scanMapTiles, int x, int y) {
+
+		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
+				|| scanMapTiles[x][y].getHasRover() == true)
+			return false;
+
+		return true;
 	}
 
 	/*
@@ -695,3 +779,8 @@ public class ROVER_02 {
 	}
 
 }
+
+// Using A-Star algorithm
+// get the target
+// find the nearest in the 7*7 matrix
+// then use A star from the current location to the selectedLoc

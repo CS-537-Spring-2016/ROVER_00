@@ -3,13 +3,14 @@ package enums;
 public enum RoverToolType {
 	NONE,		// kinda' useless, but there are useless things in the world so ...
 	MAST_CAM,			// long range terrain sensor
-	RANGE_BOOTER,
+	RANGE_BOOSTER,
 	RADIATION_SENSOR,	// for radioactive science locating
 	CHEMICAL_SENSOR,	// for organic science locating
 	SPECTRAL_SENSOR,	// for crystal science locating
 	RADAR_SENSOR,		// for mineral science finding and sensing depth of sandy areas
 	DRILL,		// for extracting from rock - also tow other rovers
-	EXCAVATOR;	// for extracting from sand, gravel, and soil
+	EXCAVATOR,
+	HARVESTER;	// for extracting from sand, gravel, and soil
 	
     public static RoverToolType getEnum(String input){
     	RoverToolType output;
@@ -21,7 +22,7 @@ public enum RoverToolType {
     		output = RoverToolType.MAST_CAM;
     		break;
     	case "RANGE_BOOTER":
-    		output = RoverToolType.RANGE_BOOTER;
+    		output = RoverToolType.RANGE_BOOSTER;
     		break;
     	case "RADIATION_SENSOR":
     		output = RoverToolType.RADIATION_SENSOR;
