@@ -63,16 +63,6 @@ public class RoverReceiver implements Receiver {
     }
 
     @Override
-    public void acceptSciences(Science... sciences) {
-        acceptedSciences = Arrays.asList(sciences);
-    }
-
-    @Override
-    public List<Science> getPreferedSciences() {
-        return acceptedSciences;
-    }
-
-    @Override
     public void ignoreTerrains(Terrain... terrains) {
         ignoredTerrains = Arrays.asList(terrains);
     }

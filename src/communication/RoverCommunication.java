@@ -34,7 +34,8 @@ public class RoverCommunication implements Runnable, Detector, Sender {
         receiver = new RoverReceiver();
     }
 
-    public void startServer() throws IOException {
+    
+	public void startServer() throws IOException {
         receiver.startServer(new ServerSocket(group.getPort()));
     }
 
@@ -146,6 +147,7 @@ public class RoverCommunication implements Runnable, Detector, Sender {
 
             new Thread(() -> {
                 final int MAX_ATTEMPTS = 60;
+                final int TIME_WAIT_TILL_NEXT_ATTEMPT = 1000; // milliseconds
                 int attempts = 0;
                 Socket socket = null;
 
@@ -155,7 +157,12 @@ public class RoverCommunication implements Runnable, Detector, Sender {
                         groupOutputMap.put(group, new DataOutputStream(socket.getOutputStream()));
                         System.out.println(group.getName() + " CONNECTED TO " + group);
                     } catch (Exception e) {
-                        attempts++;
+                        try {
+                            Thread.sleep(TIME_WAIT_TILL_NEXT_ATTEMPT);
+                            attempts++;
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 } while (socket == null && attempts <= MAX_ATTEMPTS);
             }).start();

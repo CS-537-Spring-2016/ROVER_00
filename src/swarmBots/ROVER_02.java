@@ -18,9 +18,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import common.Coord;
-import common.Group;
 import common.MapTile;
 import common.ScanMap;
+import communication.Group;
+import communication.RoverCommunication;
+import enums.RoverDriveType;
+import enums.RoverToolType;
 import enums.Science;
 import enums.Terrain;
 
@@ -78,13 +81,15 @@ public class ROVER_02 {
 	String west = "W";
 	String direction = west;
 
+	RoverCommunication rocom;
+	
 	public ROVER_02() {
 		// constructor
 		System.out.println("ROVER_02 rover object constructed");
 		rovername = "ROVER_02";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
+		sleepTime = 200; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
@@ -93,9 +98,11 @@ public class ROVER_02 {
 		System.out.println("ROVER_02 rover object constructed");
 		rovername = "ROVER_02";
 		SERVER_ADDRESS = serverAddress;
-		sleepTime = 200; // in milliseconds - smaller is faster, but the server
+		sleepTime = 300; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
+	
+
 
 	/**
 	 * Connects to the server then enters the processing loop.
@@ -112,10 +119,17 @@ public class ROVER_02 {
 		/*
 		 * connect to all the ROVERS on a separate thread
 		 */
-		initConnection();
-		for (Group group : blue) {
-			new Thread(new RoverComm(group.ip, group.port)).start();
-		}
+		
+		 Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER,
+	                RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
+
+	        /* Setup communication, only communicates with gatherers */
+	        rocom = new RoverCommunication(group,
+	                Group.getGatherers(Group.blueCorp(SERVER_ADDRESS)));
+
+	        /* Connect to the other ROVERS */
+	        rocom.run();
+		
 
 		// Process all messages from server, wait until server requests Rover ID
 		// name
@@ -168,9 +182,9 @@ public class ROVER_02 {
 
 		}
 
-		out.println("TIMER");
-		line = in.readLine();
-		timeremaining = Integer.parseInt(line);
+//		out.println("TIMER");
+//		line = in.readLine();
+//		timeremaining = Integer.parseInt(line);
 
 		// start Rover controller process
 		while (true) {

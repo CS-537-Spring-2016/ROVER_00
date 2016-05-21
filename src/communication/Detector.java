@@ -6,7 +6,6 @@ import java.util.List;
 import common.Coord;
 import common.MapTile;
 import enums.Science;
-
 /** Used to detect stuff on the ROVER'S scanned map.
  * 
  * @author Shay */
