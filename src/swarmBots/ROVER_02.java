@@ -1238,7 +1238,23 @@ public class ROVER_02 {
 			return null;
 
 		}
-	}
+		
+//		switch (direction) {
+//		case "E":
+//			return north;
+//		case "S":
+//			return east;
+//		case "N":
+//			return west;
+//		case "W":
+//			return south;
+//		default:
+//			return null;
+
+		}
+		
+		
+	
 	
 	
 	public String switchDirectionEdge(MapTile[][] scanMapTiles, String direction) {
