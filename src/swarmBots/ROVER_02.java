@@ -901,11 +901,8 @@ public class ROVER_02 {
                 RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
 
         /* Setup communication, only communicates with gatherers */
-        rocom = new RoverCommunication(group,
-                Group.getGatherers(Group.blueCorp(SERVER_ADDRESS)));
-
-        /* Connect to the other ROVERS */
-        rocom.run();
+        rocom = new RoverCommunication(group);
+        rocom.setGroupList(Group.getGatherers());
 
         // ******************************************************************
         
@@ -1134,7 +1131,7 @@ public class ROVER_02 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_02 client = new ROVER_02("192.168.1.106");
+		ROVER_02 client = new ROVER_02("localhost");
 		client.run();
 	}
 
