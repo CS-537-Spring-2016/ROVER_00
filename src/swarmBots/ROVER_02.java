@@ -1007,6 +1007,7 @@ public class ROVER_02 {
 			// System.out.println("ROVER_02 blocked test " + blocked);
 			
             /* ********* Detect and Share Science  by Shay ***************/
+			doScan();
             rocom.detectAndShare(scanMap.getScanMap(), currentLoc, 3);
             /* *************************************************/
 
