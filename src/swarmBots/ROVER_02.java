@@ -1,14 +1,17 @@
+//// Using A-Star algorithm
+//// get the target
+//// find the nearest in the 7*7 matrix
+//// then use A star from the current location to the selectedLoc
+
 package swarmBots;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,12 +23,18 @@ import com.google.gson.reflect.TypeToken;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
+<<<<<<< HEAD
+=======
+//import common.ScienceCoord;
+>>>>>>> anu
 import communication.Group;
 import communication.RoverCommunication;
 import enums.RoverDriveType;
 import enums.RoverToolType;
 import enums.Science;
 import enums.Terrain;
+
+
 
 /**
  * The seed that this program is built on is a chat program example found here:
@@ -38,6 +47,7 @@ import enums.Terrain;
 
 public class ROVER_02 {
 
+<<<<<<< HEAD
 	int timeremaining = 0;
 	boolean[] paths = new boolean[4]; // N,E,W,S
 	Coord currentLoc = null;
@@ -46,6 +56,8 @@ public class ROVER_02 {
 	Coord startLoc = null;
 	Coord targetLoc = null;
 
+=======
+>>>>>>> anu
 	Coord[] targetLocations = new Coord[3];
 	int i = 0;
 	BufferedReader in;
@@ -53,33 +65,19 @@ public class ROVER_02 {
 	String rovername;
 	ScanMap scanMap;
 	int sleepTime;
-	String SERVER_ADDRESS = "localhost";
+	String SERVER_ADDRESS = "192.168.1.106";
 	static final int PORT_ADDRESS = 9537;
 
 	Set<String> scienceLocations = new HashSet<String>();
-
-	// all the sockets of blue team - output
-	List<Socket> outputSockets = new ArrayList<Socket>();
-
-	// objects contains each rover IP, port, and name
-	List<Group> blue = new ArrayList<Group>();
-
-	// every science detected will be added in to this set
-	Set<Coord> science_discovered = new HashSet<Coord>();
-
-	// this set contains all the science the ROVERED has shared
-	// thus whatever thats in science_collection that is not in display_science
-	// are "new" and "unshared"
-	Set<Coord> displayed_science = new HashSet<Coord>();
-
-	// Your ROVER is going to listen for connection with this
-	ServerSocket listenSocket;
 
 	String north = "N";
 	String south = "S";
 	String east = "E";
 	String west = "W";
 	String direction = west;
+	
+	/* Communication Module*/
+    RoverCommunication rocom;
 
 	RoverCommunication rocom;
 	
@@ -115,7 +113,13 @@ public class ROVER_02 {
 																	// here
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
+		
+		// ******************* SET UP COMMUNICATION MODULE by Shay *********************
+        /* Your Group Info*/
+        Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER,
+                RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
 
+<<<<<<< HEAD
 		/*
 		 * connect to all the ROVERS on a separate thread
 		 */
@@ -130,6 +134,15 @@ public class ROVER_02 {
 	        /* Connect to the other ROVERS */
 	        rocom.run();
 		
+=======
+        /* Setup communication, only communicates with gatherers */
+        rocom = new RoverCommunication(group);
+        rocom.setGroupList(Group.getGatherers());
+
+        // ******************************************************************
+        
+		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
+>>>>>>> anu
 
 		// Process all messages from server, wait until server requests Rover ID
 		// name
@@ -144,7 +157,7 @@ public class ROVER_02 {
 		}
 
 		// ******** Rover logic *********
-
+		// int cnt=0;
 		String line = "";
 
 		int counter = 0;
@@ -153,6 +166,9 @@ public class ROVER_02 {
 								// requests,
 								// could be velocity limit or obstruction etc.
 		boolean blocked = false;
+
+		Coord currentLoc = null;
+		Coord previousLoc = null;
 
 		targetLocations[0] = new Coord(0, 0);
 
@@ -165,22 +181,10 @@ public class ROVER_02 {
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
 			Coord Loc = extractLOC(line);
-			startLoc = Loc;
 			targetLocations[2] = new Coord(Loc.xpos, Loc.ypos);
 		}
 
-		out.println("TARGET_LOC");
-		line = in.readLine();
-		if (line == null) {
-			System.out.println("ROVER_02 check connection to server");
-			line = "";
-		}
-		if (line.startsWith("LOC")) {
-			// loc = line.substring(4);
-			Coord Loc = extractLOC(line);
-			targetLoc = Loc;
-
-		}
+		
 
 //		out.println("TIMER");
 //		line = in.readLine();
@@ -202,16 +206,22 @@ public class ROVER_02 {
 			if (line.startsWith("LOC")) {
 				// loc = line.substring(4);
 				currentLoc = extractLOC(line);
-
 			}
 			System.out.println("ROVER_02 currentLoc at start: " + currentLoc);
+
+			// after getting location set previous equal current to be able to
+			// check for stuckness and blocked later
+			previousLoc = currentLoc;
 
 			// **** get equipment listing ****
 			ArrayList<String> equipment = new ArrayList<String>();
 			equipment = getEquipment();
+			// System.out.println("ROVER_02 equipment list results drive " +
+			// equipment.get(0));
 			System.out.println("ROVER_02 equipment list results " + equipment + "\n");
 
 			// ***** do a SCAN *****
+			// System.out.println("ROVER_02 sending SCAN request");
 			this.doScan();
 			scanMap.debugPrintMap();
 
@@ -219,9 +229,13 @@ public class ROVER_02 {
 
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 
+<<<<<<< HEAD
 			make_a_move(scanMapTiles);
 			// moving(scanMapTiles);
 
+=======
+			make_a_move(scanMapTiles, currentLoc);
+>>>>>>> anu
 			// another call for current location
 			out.println("LOC");
 			line = in.readLine();
@@ -236,6 +250,11 @@ public class ROVER_02 {
 
 			System.out.println("ROVER_02 stuck test " + stuck);
 			// System.out.println("ROVER_02 blocked test " + blocked);
+			
+            /* ********* Detect and Share Science  by Shay ***************/
+			doScan();
+            rocom.detectAndShare(scanMap.getScanMap(), currentLoc, 3);
+            /* *************************************************/
 
 			Thread.sleep(sleepTime);
 
@@ -358,14 +377,12 @@ public class ROVER_02 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_02 client = new ROVER_02();
+		ROVER_02 client = new ROVER_02("localhost");
 		client.run();
 	}
 
-	/*
-	 * -------------------------------------------- functions
-	 * ----------------------------------
-	 */
+	/////////////////////////////////// NEWLY ADDED FUNCTIONS
+	/////////////////////////////////// ////////////////////////////
 
 	// make a move
 
@@ -373,52 +390,15 @@ public class ROVER_02 {
 		out.println("MOVE " + direction);
 	}
 
-	// list of science locations nearby
-	public void scanScience(MapTile[][] scanMapTiles) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
-		int xpos, ypos;
-		int coordX = currentLoc.xpos - centerIndex;
-		int coordY = currentLoc.ypos - centerIndex;
-
-		for (int i = 0; i < scanMapTiles.length; i++) {
-			for (int j = 0; j < scanMapTiles.length; j++) {
-				if (scanMapTiles[i][j].getScience() == Science.RADIOACTIVE
-						|| scanMapTiles[i][j].getScience() == Science.ORGANIC) {
-					xpos = coordX + i;
-					ypos = coordY + j;
-					Coord coord = new Coord(scanMapTiles[i][j].getTerrain(), scanMapTiles[i][j].getScience(), xpos,
-							ypos);
-					science_discovered.add(coord);
-				}
-			}
-		}
-
-	}
-
-	/**
-	 * write to each rover the coords of a tile that contains radiation. will
-	 * only write to them if the coords are new.
-	 */
-	private void shareScience() {
-		for (Coord c : science_discovered) {
-			if (!displayed_science.contains(c)) {
-				for (Socket s : outputSockets)
-					try {
-						new DataOutputStream(s.getOutputStream()).writeBytes(c.toString() + "\r\n");
-					} catch (Exception e) {
-
-					}
-				displayed_science.add(c);
-			}
-		}
-	}
-
-	// have we reached a wall ??
-
-	public boolean isWall(MapTile[][] scanMapTiles, String direction) {
+<<<<<<< HEAD
+=======
+	// To be explained by Darsh
+	
+	// check for sand / rover / wall in the next move
+	public boolean isValidMove(MapTile[][] scanMapTiles, String direction) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
+
 		switch (direction) {
 		case "N":
 			y = y - 1;
@@ -434,11 +414,44 @@ public class ROVER_02 {
 			break;
 		}
 
-		if (scanMapTiles[x][y].getTerrain() == Terrain.NONE)
-			return true;
-		return false;
+		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
+				|| scanMapTiles[x][y].getHasRover() == true)
+			return false;
+
+		return true;
 	}
 
+	
+	// To be explained by Anuradha
+	
+>>>>>>> anu
+	// list of science locations nearby
+	public void scanScience(MapTile[][] scanMapTiles, Coord currentLoc) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+		int xpos, ypos;
+		int coordX = currentLoc.xpos - centerIndex;
+		int coordY = currentLoc.ypos - centerIndex;
+
+		for (int i = 0; i < scanMapTiles.length; i++) {
+			for (int j = 0; j < scanMapTiles.length; j++) {
+				if (scanMapTiles[i][j].getScience() == Science.RADIOACTIVE
+						|| scanMapTiles[i][j].getScience() == Science.ORGANIC) {
+					xpos = coordX + i;
+					ypos = coordY + j;
+					scienceLocations.add(scanMapTiles[i][j].getTerrain() + " " + scanMapTiles[i][j].getScience() + " "
+							+ xpos + " " + ypos);
+				}
+			}
+		}
+
+	}
+
+
+
+	
+	// To be explained by Suhani 
 	// if blocked / stuck change the direction
 	public String switchDirection(MapTile[][] scanMapTiles, String direction) {
 		switch (direction) {
@@ -455,6 +468,7 @@ public class ROVER_02 {
 
 		}
 	}
+<<<<<<< HEAD
 
 	public String switchDirectionEdge(MapTile[][] scanMapTiles, String direction) {
 		switch (direction) {
@@ -633,13 +647,22 @@ public class ROVER_02 {
 		currentDir = nextDir;
 	}
 
+=======
+	
+	// To be explained by Siddhi
+	
+>>>>>>> anu
 	// Move
-	public void make_a_move(MapTile[][] scanMapTiles) throws IOException {
+	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) throws IOException {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
+<<<<<<< HEAD
 		scanScience(scanMapTiles);
 		System.out.println("SCIENCE DISCOVERED: " + science_discovered);
 		shareScience();
+=======
+		scanScience(scanMapTiles, currentLoc);
+>>>>>>> anu
 
 		if (isValidMove(scanMapTiles, direction)) {
 			move(direction);
@@ -651,10 +674,10 @@ public class ROVER_02 {
 				direction = switchDirection(scanMapTiles, direction);
 			}
 			move(direction);
-
 		}
 	}
 
+<<<<<<< HEAD
 	// Reverse move
 
 	public void makeAReverseMove(MapTile[][] scanMapTiles) throws IOException {
@@ -798,3 +821,6 @@ public class ROVER_02 {
 // get the target
 // find the nearest in the 7*7 matrix
 // then use A star from the current location to the selectedLoc
+=======
+}
+>>>>>>> anu
