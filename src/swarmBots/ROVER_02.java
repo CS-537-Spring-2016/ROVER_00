@@ -23,10 +23,7 @@ import com.google.gson.reflect.TypeToken;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
-<<<<<<< HEAD
-=======
 //import common.ScienceCoord;
->>>>>>> anu
 import communication.Group;
 import communication.RoverCommunication;
 import enums.RoverDriveType;
@@ -47,17 +44,6 @@ import enums.Terrain;
 
 public class ROVER_02 {
 
-<<<<<<< HEAD
-	int timeremaining = 0;
-	boolean[] paths = new boolean[4]; // N,E,W,S
-	Coord currentLoc = null;
-	Coord previousLoc = null;
-
-	Coord startLoc = null;
-	Coord targetLoc = null;
-
-=======
->>>>>>> anu
 	Coord[] targetLocations = new Coord[3];
 	int i = 0;
 	BufferedReader in;
@@ -79,15 +65,13 @@ public class ROVER_02 {
 	/* Communication Module*/
     RoverCommunication rocom;
 
-	RoverCommunication rocom;
-	
 	public ROVER_02() {
 		// constructor
 		System.out.println("ROVER_02 rover object constructed");
 		rovername = "ROVER_02";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 200; // in milliseconds - smaller is faster, but the server
+		sleepTime = 300; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
@@ -96,11 +80,9 @@ public class ROVER_02 {
 		System.out.println("ROVER_02 rover object constructed");
 		rovername = "ROVER_02";
 		SERVER_ADDRESS = serverAddress;
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
+		sleepTime = 200; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
-	
-
 
 	/**
 	 * Connects to the server then enters the processing loop.
@@ -119,22 +101,6 @@ public class ROVER_02 {
         Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER,
                 RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
 
-<<<<<<< HEAD
-		/*
-		 * connect to all the ROVERS on a separate thread
-		 */
-		
-		 Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER,
-	                RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
-
-	        /* Setup communication, only communicates with gatherers */
-	        rocom = new RoverCommunication(group,
-	                Group.getGatherers(Group.blueCorp(SERVER_ADDRESS)));
-
-	        /* Connect to the other ROVERS */
-	        rocom.run();
-		
-=======
         /* Setup communication, only communicates with gatherers */
         rocom = new RoverCommunication(group);
         rocom.setGroupList(Group.getGatherers());
@@ -142,7 +108,6 @@ public class ROVER_02 {
         // ******************************************************************
         
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
->>>>>>> anu
 
 		// Process all messages from server, wait until server requests Rover ID
 		// name
@@ -186,10 +151,6 @@ public class ROVER_02 {
 
 		
 
-//		out.println("TIMER");
-//		line = in.readLine();
-//		timeremaining = Integer.parseInt(line);
-
 		// start Rover controller process
 		while (true) {
 
@@ -229,13 +190,7 @@ public class ROVER_02 {
 
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 
-<<<<<<< HEAD
-			make_a_move(scanMapTiles);
-			// moving(scanMapTiles);
-
-=======
 			make_a_move(scanMapTiles, currentLoc);
->>>>>>> anu
 			// another call for current location
 			out.println("LOC");
 			line = in.readLine();
@@ -390,8 +345,6 @@ public class ROVER_02 {
 		out.println("MOVE " + direction);
 	}
 
-<<<<<<< HEAD
-=======
 	// To be explained by Darsh
 	
 	// check for sand / rover / wall in the next move
@@ -424,7 +377,6 @@ public class ROVER_02 {
 	
 	// To be explained by Anuradha
 	
->>>>>>> anu
 	// list of science locations nearby
 	public void scanScience(MapTile[][] scanMapTiles, Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -448,7 +400,30 @@ public class ROVER_02 {
 
 	}
 
+	// have we reached a wall ??
 
+	public boolean isWall(MapTile[][] scanMapTiles, String direction) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		switch (direction) {
+		case "N":
+			y = y - 1;
+			break;
+		case "S":
+			y = y + 1;
+			break;
+		case "E":
+			x = x + 1;
+			break;
+		case "W":
+			x = x - 1;
+			break;
+		}
+
+		if (scanMapTiles[x][y].getTerrain() == Terrain.NONE)
+			return true;
+		return false;
+	}
 
 	
 	// To be explained by Suhani 
@@ -468,201 +443,14 @@ public class ROVER_02 {
 
 		}
 	}
-<<<<<<< HEAD
-
-	public String switchDirectionEdge(MapTile[][] scanMapTiles, String direction) {
-		switch (direction) {
-		case "E":
-			return south;
-		case "S":
-			return west;
-		case "N":
-			return east;
-		case "W":
-			return north;
-		default:
-			return null;
-
-		}
-	}
-
-	// is it a corner ?
-
-	public void switchCornerDirection(MapTile[][] scanMapTiles) {
-
-		boolean n = true, s = true, e = true, w = true;
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-
-		if (scanMapTiles[x - 1][y].getTerrain() == Terrain.NONE)
-			w = false;
-		if (scanMapTiles[x][y - 1].getTerrain() == Terrain.NONE)
-			n = false;
-		if (scanMapTiles[x + 1][y].getTerrain() == Terrain.NONE)
-			e = false;
-		if (scanMapTiles[x][y + 1].getTerrain() == Terrain.NONE)
-			s = false;
-
-		if (e && s) {
-			// 1
-			if (currentDir == south) {
-				currentDir = east;
-				nextDir = east;
-			} else if (currentDir == east)
-				currentDir = south;
-			nextDir = south;
-		}
-		if (w && s) {
-			// 2
-			if (currentDir == west) {
-				currentDir = south;
-				nextDir = south;
-			} else if (currentDir == south) {
-				currentDir = west;
-				nextDir = west;
-			}
-		}
-		if (n && w) {
-			// 3
-			if (currentDir == north) {
-				currentDir = west;
-				nextDir = west;
-			} else if (currentDir == west) {
-				currentDir = north;
-				nextDir = north;
-			}
-		}
-		if (n && e) {
-			// 4
-			if (currentDir == east) {
-				currentDir = north;
-				nextDir = north;
-
-			} else if (currentDir == north) {
-				nextDir = east;
-				currentDir = east;
-			}
-		}
-
-	}
-
-	public void possiblePaths(MapTile[][] scanMapTiles) {
-		paths[0] = isValidMove(scanMapTiles, "N");
-		paths[1] = isValidMove(scanMapTiles, "E");
-		paths[2] = isValidMove(scanMapTiles, "W");
-		paths[3] = isValidMove(scanMapTiles, "S");
-
-	}
-
-	public int isAWall(MapTile[][] scanMapTiles) {
-		int c = 0;
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-
-		if (scanMapTiles[x - 1][y].getTerrain() == Terrain.NONE) {
-			System.out.println("WAll left");
-			c++;
-		}
-
-		if (scanMapTiles[x][y - 1].getTerrain() == Terrain.NONE) {
-			System.out.println("WAll up");
-			c++;
-		}
-		if (scanMapTiles[x + 1][y].getTerrain() == Terrain.NONE) {
-			System.out.println("WAll right");
-			c++;
-		}
-		if (scanMapTiles[x][y + 1].getTerrain() == Terrain.NONE) {
-			System.out.println("WAll down");
-			c++;
-		}
-		return c;
-	}
-
-	String nextDir = west;
-	String currentDir = west;
-
-	public void oneDeviation_West(MapTile[][] scanMapTiles) {
-
-		if (isAWall(scanMapTiles) == 2) {
-			switchCornerDirection(scanMapTiles);
-			move(currentDir);
-		}
-
-		if (isValidMove(scanMapTiles, north)) {
-			currentDir = north;
-			nextDir = west;
-		} else if (isValidMove(scanMapTiles, south)) {
-			currentDir = south;
-			nextDir = west;
-		} else {
-			currentDir = east;
-			nextDir = east;
-		}
-
-	}
-
-	// check for sand / rover / wall in the next move
-
-	public boolean isValidMove(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-
-		switch (direction) {
-		case "N":
-			y = y - 1;
-			break;
-		case "S":
-			y = y + 1;
-			break;
-		case "E":
-			x = x + 1;
-			break;
-		case "W":
-			x = x - 1;
-			break;
-		}
-
-		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
-				|| scanMapTiles[x][y].getHasRover() == true)
-			return false;
-
-		return true;
-	}
-
-	public void moving(MapTile[][] scanMapTiles) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		possiblePaths(scanMapTiles);
-
-		currentDir = west;
-
-		if (isValidMove(scanMapTiles, currentDir)) {
-			// nextDir = west;
-			move(currentDir);
-		} else {
-			oneDeviation_West(scanMapTiles);
-			move(currentDir);
-		}
-		currentDir = nextDir;
-	}
-
-=======
 	
 	// To be explained by Siddhi
 	
->>>>>>> anu
 	// Move
 	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) throws IOException {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
-<<<<<<< HEAD
-		scanScience(scanMapTiles);
-		System.out.println("SCIENCE DISCOVERED: " + science_discovered);
-		shareScience();
-=======
 		scanScience(scanMapTiles, currentLoc);
->>>>>>> anu
 
 		if (isValidMove(scanMapTiles, direction)) {
 			move(direction);
@@ -677,150 +465,4 @@ public class ROVER_02 {
 		}
 	}
 
-<<<<<<< HEAD
-	// Reverse move
-
-	public void makeAReverseMove(MapTile[][] scanMapTiles) throws IOException {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		scanScience(scanMapTiles);
-		System.out.println("SCIENCE DISCOVERED: " + science_discovered);
-		shareScience();
-		double[][] distance = nearestTileToTarget(scanMapTiles, startLoc);
-		Coord nextTargetCoord;
-
-		nextTargetCoord = largestinArray(scanMapTiles, distance);
-		
-		// continue here ...
-		// implement a star in a different file
-		//change the nodes to coord
-		//use it to find the path required
-
-	}
-
-	public Coord largestinArray(MapTile[][] scanMapTiles, double[][] distance) {
-		Coord coord = null;
-		double max = 0;
-
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		int xpos, ypos;
-
-		int coordX = currentLoc.xpos - centerIndex;
-		int coordY = currentLoc.ypos - centerIndex;
-
-		for (int i = 0; i < 7; i++) {
-			for (int j = 0; j < 7; j++) {
-				if (max < distance[i][j] && isValidTile(scanMapTiles, i, j)  ) {
-					xpos = coordX + i;
-					ypos = coordY + j;
-					max = distance[i][j];
-					coord = new Coord(xpos, ypos);
-				}
-			}
-		}
-		return coord;
-	}
-
-	public double[][] nearestTileToTarget(MapTile[][] scanMapTiles, Coord TargetLoc) throws IOException {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		int xpos, ypos;
-
-		int coordX = currentLoc.xpos - centerIndex;
-		int coordY = currentLoc.ypos - centerIndex;
-
-		int targetX = TargetLoc.xpos;
-		int targetY = TargetLoc.ypos;
-
-		double[][] distance = null;
-
-		for (int i = 0; i < scanMapTiles.length; i++) {
-			for (int j = 0; j < scanMapTiles.length; j++) {
-
-				xpos = coordX + i;
-				ypos = coordY + j;
-
-				distance[i][j] = Math.sqrt((targetX - xpos) * (targetX - xpos) + (targetY - ypos) * (targetY - ypos));
-			}
-		}
-
-		return distance;
-
-	}
-
-	public boolean isValidTile(MapTile[][] scanMapTiles, int x, int y) {
-
-		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
-				|| scanMapTiles[x][y].getHasRover() == true)
-			return false;
-
-		return true;
-	}
-
-	/*
-	 * ----------------------------------- COMMUNICATION PROTOCOL
-	 * ----------------------------------------
-	 */
-
-	/**
-	 * Try to connect each socket on a separate thread. Will try until it works.
-	 * When socket is created, save it to a LIST
-	 *
-	 */
-	class RoverComm implements Runnable {
-
-		String ip;
-		int port;
-		Socket socket;
-
-		public RoverComm(String ip, int port) {
-			this.ip = ip;
-			this.port = port;
-		}
-
-		@Override
-		public void run() {
-			do {
-				try {
-					socket = new Socket(ip, port);
-				} catch (UnknownHostException e) {
-
-				} catch (IOException e) {
-
-				}
-			} while (socket == null);
-
-			outputSockets.add(socket);
-			System.out.println(socket.getPort() + " " + socket.getInetAddress());
-		}
-
-	}
-
-	/**
-	 * add all the group's rover into a LIST
-	 */
-	public void initConnection() {
-		// dummy value # 1
-		blue.add(new Group("Dummy Group #1", "localhost", 53799));
-
-		// blue rooster
-		blue.add(new Group("GROUP_01", "localhost", 53701));
-		blue.add(new Group("GROUP_03", "localhost", 53703));
-		blue.add(new Group("GROUP_04", "localhost", 53704));
-		blue.add(new Group("GROUP_05", "localhost", 53705));
-		blue.add(new Group("GROUP_06", "localhost", 53706));
-		blue.add(new Group("GROUP_07", "localhost", 53707));
-		blue.add(new Group("GROUP_08", "localhost", 53708));
-		blue.add(new Group("GROUP_09", "localhost", 53709));
-	}
-
 }
-
-// Using A-Star algorithm
-// get the target
-// find the nearest in the 7*7 matrix
-// then use A star from the current location to the selectedLoc
-=======
-}
->>>>>>> anu
