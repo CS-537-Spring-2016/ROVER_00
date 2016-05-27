@@ -8,19 +8,6 @@ import enums.Terrain;
 
 public class Coord {
 
-<<<<<<< HEAD
-=======
-
-
-	// thanks to this posting http://stackoverflow.com/questions/27581/what-issues-should-be-considered-when-overriding-equals-and-hashcode-in-java
-	
-    public final int xpos;
-    public final int ypos;
-    public Terrain terrain;
-    public boolean hasRover;
-    public Science science;
-	
->>>>>>> anu
 
 
 	// thanks to this posting http://stackoverflow.com/questions/27581/what-issues-should-be-considered-when-overriding-equals-and-hashcode-in-java
@@ -36,11 +23,7 @@ public class Coord {
 	public String toString() {
 		return terrain + " " + science + " " + xpos + " " + ypos;
 	}
-<<<<<<< HEAD
 
-=======
-
->>>>>>> anu
 //
 //	public Coord(int x, int y) {
 //		this.xpos = x;
@@ -76,11 +59,7 @@ public class Coord {
 //		return ((this.xpos == theOther.xpos) && (this.ypos == theOther.ypos));
 //	}
 //
-<<<<<<< HEAD
 
-=======
-
->>>>>>> anu
 	
 	public Coord(int x, int y){
 		this.xpos = x;
@@ -115,7 +94,6 @@ public class Coord {
             return false;
         if (obj == this)
             return true;
-<<<<<<< HEAD
 
         Coord theOther = (Coord) obj;
 //        return new EqualsBuilder().
@@ -128,17 +106,3 @@ public class Coord {
 	
 
 }
-=======
-
-        Coord theOther = (Coord) obj;
-//        return new EqualsBuilder().
-//            // if deriving: appendSuper(super.equals(obj)).
-//            append(xpos, theOther.xpos).
-//            append(ypos, theOther.ypos).
-//            isEquals();
-        return ((this.xpos == theOther.xpos) && (this.ypos == theOther.ypos));
-    }
-	
-
-}
->>>>>>> anu

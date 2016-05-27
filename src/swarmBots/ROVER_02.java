@@ -400,30 +400,7 @@ public class ROVER_02 {
 
 	}
 
-	// have we reached a wall ??
 
-	public boolean isWall(MapTile[][] scanMapTiles, String direction) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex;
-		switch (direction) {
-		case "N":
-			y = y - 1;
-			break;
-		case "S":
-			y = y + 1;
-			break;
-		case "E":
-			x = x + 1;
-			break;
-		case "W":
-			x = x - 1;
-			break;
-		}
-
-		if (scanMapTiles[x][y].getTerrain() == Terrain.NONE)
-			return true;
-		return false;
-	}
 
 	
 	// To be explained by Suhani 
