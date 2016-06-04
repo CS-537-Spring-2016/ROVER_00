@@ -31,7 +31,7 @@ public class Group {
             RoverToolType.DRILL, RoverToolType.SPECTRAL_SENSOR);
     public static final Group G2 = new Group("ROVER_02", "localhost", 53702, RoverDriveType.WALKER,
             RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
-    public static final Group G3 = new Group("ROVER_03", "localhost", 53703, RoverDriveType.TREADS,
+    public static final Group G3 = new Group("ROVER_03", "192.168.1.107", 53703, RoverDriveType.TREADS,
             RoverToolType.DRILL, RoverToolType.HARVESTER);
     public static final Group G4 = new Group("ROVER_04", "localhost", 53704, RoverDriveType.WALKER,
             RoverToolType.DRILL, RoverToolType.RADAR_SENSOR);
@@ -39,7 +39,7 @@ public class Group {
             RoverToolType.RANGE_BOOSTER, RoverToolType.SPECTRAL_SENSOR);
     public static final Group G6 = new Group("ROVER_06", "localhost", 53706, RoverDriveType.WHEELS,
             RoverToolType.RANGE_BOOSTER, RoverToolType.RADIATION_SENSOR);
-    public static final Group G7 = new Group("ROVER_07", "localhost", 53707, RoverDriveType.TREADS,
+    public static final Group G7 = new Group("ROVER_07", "192.168.1.143", 53707, RoverDriveType.TREADS,
             RoverToolType.HARVESTER, RoverToolType.RADAR_SENSOR);
     public static final Group G8 = new Group("ROVER_08", "localhost", 53708, RoverDriveType.TREADS,
             RoverToolType.HARVESTER, RoverToolType.SPECTRAL_SENSOR);
