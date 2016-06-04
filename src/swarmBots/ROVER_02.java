@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -31,8 +32,6 @@ import enums.RoverToolType;
 import enums.Science;
 import enums.Terrain;
 
-
-
 /**
  * The seed that this program is built on is a chat program example found here:
  * http://cs.lmu.edu/~ray/notes/javanetexamples/ Many thanks to the authors for
@@ -45,6 +44,7 @@ import enums.Terrain;
 public class ROVER_02 {
 
 	Coord[] targetLocations = new Coord[3];
+	Coord target = null;
 	int i = 0;
 	BufferedReader in;
 	PrintWriter out;
@@ -60,10 +60,10 @@ public class ROVER_02 {
 	String south = "S";
 	String east = "E";
 	String west = "W";
-	String direction = west;
-	
-	/* Communication Module*/
-    RoverCommunication rocom;
+	String direction = east;
+	String previousMove;
+	/* Communication Module */
+	RoverCommunication rocom;
 
 	public ROVER_02() {
 		// constructor
@@ -95,18 +95,19 @@ public class ROVER_02 {
 																	// here
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
-		
-		// ******************* SET UP COMMUNICATION MODULE by Shay *********************
-        /* Your Group Info*/
-        Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER,
-                RoverToolType.RADIATION_SENSOR, RoverToolType.CHEMICAL_SENSOR);
 
-        /* Setup communication, only communicates with gatherers */
-        rocom = new RoverCommunication(group);
-        rocom.setGroupList(Group.getGatherers());
+		// ******************* SET UP COMMUNICATION MODULE by Shay
+		// *********************
+		/* Your Group Info */
+		Group group = new Group(rovername, SERVER_ADDRESS, 53702, RoverDriveType.WALKER, RoverToolType.RADIATION_SENSOR,
+				RoverToolType.CHEMICAL_SENSOR);
 
-        // ******************************************************************
-        
+		/* Setup communication, only communicates with gatherers */
+		rocom = new RoverCommunication(group);
+		rocom.setGroupList(Group.getGatherers());
+
+		// ******************************************************************
+
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		// Process all messages from server, wait until server requests Rover ID
@@ -137,20 +138,38 @@ public class ROVER_02 {
 
 		targetLocations[0] = new Coord(0, 0);
 
-		out.println("START_LOC");
-		line = in.readLine();
-		if (line == null) {
-			System.out.println("ROVER_02 check connection to server");
-			line = "";
-		}
-		if (line.startsWith("LOC")) {
-			// loc = line.substring(4);
-			Coord Loc = extractLOC(line);
-			targetLocations[2] = new Coord(Loc.xpos, Loc.ypos);
-		}
+		// out.println("START_LOC");
+		// line = in.readLine();
+		// if (line == null) {
+		// System.out.println("ROVER_02 check connection to server");
+		// line = "";
+		// }
+		// if (line.startsWith("LOC")) {
+		// // loc = line.substring(4);
+		// Coord Loc = extractLOC(line);
+		// targetLocations[2] = new Coord(Loc.xpos, Loc.ypos);
+		// }
 
+		System.out.println("getting target loc");
 		
+		 out.println("TARGET_LOC");
+		 line = in.readLine();
+		 System.out.println("line =" + line);
+		 if (line == null) {
+		 System.out.println("ROVER_02 check connection to server");
+		 line = "";
+		 }
+		 if (line.startsWith("TARGET_LOC")) {
+		 // loc = line.substring(4);
+			 System.out.println("inside if");
+		System.out.println(line);
+		target = extractLOC(line);
+//		 target = Loc;
+		// target = new Coord(Loc.xpos,Loc.ypos);
+		 }
+//		 System.out.println(target.xpos + " , " + target.ypos);
 
+		//target = new Coord(49, 49);
 		// start Rover controller process
 		while (true) {
 
@@ -168,7 +187,7 @@ public class ROVER_02 {
 				// loc = line.substring(4);
 				currentLoc = extractLOC(line);
 			}
-			System.out.println("ROVER_02 currentLoc at start: " + currentLoc);
+//			System.out.println("ROVER_02 currentLoc at start: " + currentLoc);
 
 			// after getting location set previous equal current to be able to
 			// check for stuckness and blocked later
@@ -179,39 +198,74 @@ public class ROVER_02 {
 			equipment = getEquipment();
 			// System.out.println("ROVER_02 equipment list results drive " +
 			// equipment.get(0));
-			System.out.println("ROVER_02 equipment list results " + equipment + "\n");
+//			System.out.println("ROVER_02 equipment list results " + equipment + "\n");
 
 			// ***** do a SCAN *****
-			// System.out.println("ROVER_02 sending SCAN request");
+//			System.out.println("ROVER_02 sending SCAN request");
 			this.doScan();
+//			System.out.println("debug");
 			scanMap.debugPrintMap();
 
 			// MOVING
-
+			System.out.println("moving");
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
+		//	System.out.println("calling make a star");
+			
+			makeAStarmove(scanMapTiles, currentLoc, target);
 
-			make_a_move(scanMapTiles, currentLoc);
-			// another call for current location
+		//	System.out.println("Astar done");
+
 			out.println("LOC");
 			line = in.readLine();
+			if (line == null) {
+								line = "";
+			}
 			if (line.startsWith("LOC")) {
+				// loc = line.substring(4);
 				currentLoc = extractLOC(line);
 			}
-
-			System.out.println("ROVER_02 currentLoc after recheck: " + currentLoc);
-			System.out.println("ROVER_02 previousLoc: " + previousLoc);
+			
+			if(currentLoc.equals(target))
+			{
+				out.println("START_LOC");
+				 line = in.readLine();
+				 if (line == null) {
+				 System.out.println("ROVER_02 check connection to server");
+				 line = "";
+				 }
+				 if (line.startsWith("START_LOC")) {
+				 // loc = line.substring(4);
+				 Coord Loc = extractLOC(line);
+				 target = Loc;
+				 }
+				 continue;
+			}
+			
+			for (int i = 0; i < 10; i++) {
+				out.println("LOC");
+				line = in.readLine();
+				if (line == null) {
+									line = "";
+				}
+				if (line.startsWith("LOC")) {
+					// loc = line.substring(4);
+					currentLoc = extractLOC(line);
+				}
+				//System.out.println("ROVER_02 currentLoc at start: " + currentLoc);
+				make_a_move(scanMapTiles, currentLoc);
+			}
 
 			// test for stuckness
 
 			System.out.println("ROVER_02 stuck test " + stuck);
 			// System.out.println("ROVER_02 blocked test " + blocked);
-			
-            /* ********* Detect and Share Science  by Shay ***************/
-			doScan();
-            rocom.detectAndShare(scanMap.getScanMap(), currentLoc, 3);
-            /* *************************************************/
 
-			Thread.sleep(sleepTime);
+			/* ********* Detect and Share Science by Shay ***************/
+			doScan();
+			rocom.detectAndShare(scanMap.getScanMap(), currentLoc, 3);
+			/* *************************************************/
+
+			// Thread.sleep(sleepTime);
 
 			// System.out.println("ROVER_02 ------------ bottom process control
 			// --------------");
@@ -316,15 +370,35 @@ public class ROVER_02 {
 	// this takes the LOC response string, parses out the x and y values and
 	// returns a Coord object
 	public static Coord extractLOC(String sStr) {
-		sStr = sStr.substring(4);
+		int indexOf;
+		indexOf = sStr.indexOf(" ");
+		
+		sStr = sStr.substring(indexOf +1);
+		
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			// System.out.println("extracted xStr " + xStr);
+			
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			// System.out.println("extracted yStr " + yStr);
+			
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
+
+	}
+	
+	public static Coord extractTargetLOC(String sStr) {
+		
+		String[] splitString = sStr.split(" ");
+		
+		for(String s : splitString)
+			System.out.println(s);
+		
+		String xStr = splitString[1];
+		String yStr = splitString[2];
+		System.out.println("X value = " + splitString[1]);
+		System.out.println("Y value = " + splitString[2]);
+		
+		return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 
 	}
 
@@ -342,11 +416,12 @@ public class ROVER_02 {
 	// make a move
 
 	public void move(String direction) {
+		previousMove = direction;
 		out.println("MOVE " + direction);
 	}
 
 	// To be explained by Darsh
-	
+
 	// check for sand / rover / wall in the next move
 	public boolean isValidMove(MapTile[][] scanMapTiles, String direction) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -374,9 +449,8 @@ public class ROVER_02 {
 		return true;
 	}
 
-	
 	// To be explained by Anuradha
-	
+
 	// list of science locations nearby
 	public void scanScience(MapTile[][] scanMapTiles, Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -400,10 +474,7 @@ public class ROVER_02 {
 
 	}
 
-
-
-	
-	// To be explained by Suhani 
+	// To be explained by Suhani
 	// if blocked / stuck change the direction
 	public String switchDirection(MapTile[][] scanMapTiles, String direction) {
 		switch (direction) {
@@ -419,27 +490,395 @@ public class ROVER_02 {
 			return null;
 
 		}
+
 	}
-	
+
 	// To be explained by Siddhi
-	
+
 	// Move
 	public void make_a_move(MapTile[][] scanMapTiles, Coord currentLoc) throws IOException {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex;
 		scanScience(scanMapTiles, currentLoc);
+		try {
 
-		if (isValidMove(scanMapTiles, direction)) {
-			move(direction);
+			if (isValidMove(scanMapTiles, direction)) {
+				System.out.println("Random move "+ direction);
+				move(direction);
 
-		} else {
+				Thread.sleep(sleepTime);
 
-			while (!isValidMove(scanMapTiles, direction)) {
+			} else {
 
-				direction = switchDirection(scanMapTiles, direction);
+				while (!isValidMove(scanMapTiles, direction)) {
+
+					direction = switchDirection(scanMapTiles, direction);
+				}
+				System.out.println("Random move "+ direction);
+				move(direction);
+				Thread.sleep(sleepTime);
 			}
-			move(direction);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+	}
+
+	// Annother move function(MapTile[][] scanMapTiles)
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	/* Extra */
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+
+	static PriorityQueue<Tile> open;
+	static boolean closed[][];
+	public static final int V_H_COST = 10;
+	static boolean blocked[][];
+	static Tile[][] grid = new Tile[7][7];
+	static int startI = 3, startJ = 3;
+	static int endI, endJ;
+
+	public static class Tile {
+		int x, y;
+		int h = 0;
+		int f, g;
+		Tile parent;
+
+		public Tile(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		@Override
+		public String toString() {
+			return "[" + this.x + ", " + this.y + "]";
+		}
+	}
+
+	public static void setEndCell(int i, int j) {
+		endI = i;
+		endJ = j;
+	}
+
+	public static void setBlocked(int i, int j) {
+	//	System.out.println("bloacking " + i + "," + j);
+		grid[i][j] = null;
+	//	System.out.println("end");
+	}
+
+	static void checkAndUpdateCost(Tile current, Tile t, int cost) {
+		if (t == null || closed[t.x][t.y])
+			return;
+		int t_final_cost = t.h + cost;
+
+		boolean inOpen = open.contains(t);
+		if (!inOpen || t_final_cost < t.f) {
+			t.f = t_final_cost;
+			t.parent = current;
+			if (!inOpen)
+				open.add(t);
+		}
+	}
+
+	public void Astar(MapTile[][] scanMapTiles) {
+		//System.out.println("astar");
+		Tile temp = new Tile(3, 3);
+		open.add(temp);
+		Tile current;
+		//System.out.println("End : " + endI + " , " + endJ);
+		while (true) {
+			current = open.poll();
+			if (current == null)
+				break;
+			closed[current.x][current.y] = true;
+
+			if (current.x == endI && current.y == endJ) {
+				return;
+			}
+
+			Tile t;
+
+			if (current.x - 1 >= 0) {
+				t = grid[current.x - 1][current.y];
+				checkAndUpdateCost(current, t, current.f + V_H_COST);
+			}
+			if (current.y - 1 >= 0) {
+				t = grid[current.x][current.y - 1];
+				checkAndUpdateCost(current, t, current.f + V_H_COST);
+			}
+
+			if (current.y + 1 < grid[0].length) {
+				t = grid[current.x][current.y + 1];
+				checkAndUpdateCost(current, t, current.f + V_H_COST);
+			}
+
+			if (current.x + 1 < grid.length) {
+				t = grid[current.x + 1][current.y];
+				checkAndUpdateCost(current, t, current.f + V_H_COST);
+			}
+		}
+	}
+
+	public List<Tile> neighboursCoord(Tile currentLoc) {
+		List<Tile> adj = new ArrayList<Tile>();
+
+		adj.add(new Tile(currentLoc.x - 1, currentLoc.y));
+		adj.add(new Tile(currentLoc.x + 1, currentLoc.y));
+		adj.add(new Tile(currentLoc.x, currentLoc.y + 1));
+		adj.add(new Tile(currentLoc.x, currentLoc.y - 1));
+
+		return adj;
+	}
+
+	public boolean isValidTile(MapTile[][] scanMapTiles, Tile t)
+
+	{
+		int x = t.x;
+		int y = t.y;
+		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
+				|| scanMapTiles[x][y].getHasRover() == true)
+			return false;
+
+		return true;
+	}
+
+	public boolean isValidTile_XY(MapTile[][] scanMapTiles, int x, int y)
+
+	{
+		// int x = t.x;
+		// int y = t.y;
+	//	System.out.println("is valid " + x + "," + y);
+		if (scanMapTiles[x][y].getTerrain() == Terrain.SAND || scanMapTiles[x][y].getTerrain() == Terrain.NONE
+				|| scanMapTiles[x][y].getHasRover() == true)
+			return false;
+
+		return true;
+	}
+
+	public void scanSand(MapTile[][] scanMapTiles) {
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+	//	System.out.println("scan sand function");
+		for (int i = 0; i < scanMapTiles.length; i++) {
+			for (int j = 0; j < scanMapTiles.length; j++) {
+				if (scanMapTiles[i][j].getTerrain() == Terrain.SAND || scanMapTiles[i][j].getTerrain() == Terrain.NONE
+						|| scanMapTiles[i][j].getHasRover() == true) {
+					setBlocked(i, j);
+		//			System.out.println("out of set blocked");
+					blocked[i][j] = true;
+			//		System.out.println("settign bloacked");
+				}
+			}
+		}
+
+		System.out.println("out of for loop");
+
+	}
+
+	public void callAStar(MapTile[][] scanMapTiles, int ei, int ej) {
+//		System.out.println("call a star");
+		grid = new Tile[7][7];
+		closed = new boolean[7][7];
+		open = new PriorityQueue<>((Object o1, Object o2) -> {
+			Tile c1 = (Tile) o1;
+			Tile c2 = (Tile) o2;
+			return c1.f < c2.f ? -1 : c1.f > c2.f ? 1 : 0;
+		});
+
+//		System.out.println("set end cell");
+		setEndCell(ei, ej);
+		for (int i = 0; i < 7; ++i) {
+			for (int j = 0; j < 7; ++j) {
+				grid[i][j] = new Tile(i, j);
+				grid[i][j].h = Math.abs(i - endI) + Math.abs(j - endJ);
+			}
+		}
+		grid[3][3].f = 0;
+		blocked = new boolean[7][7];
+		initialiseBlocked(scanMapTiles);
+//		System.out.println("scan sand");
+		scanSand(scanMapTiles);
+//
+//		System.out.println("Grid: ");
+//		for (int i = 0; i < 7; ++i) {
+//			for (int j = 0; j < 7; ++j) {
+//				if (i == 3 && j == 3)
+//					System.out.print("SO  "); // Source
+//				else if (i == ei && j == ej)
+//					System.out.print("DE  "); // Destination
+//				else if (grid[i][j] != null)
+//					System.out.printf("%-3d ", 0);
+//				else
+//					System.out.print("BL  ");
+//			}
+//			System.out.println();
+//		}
+//		System.out.println();
+
+		
+		Astar(scanMapTiles);
+//		
+		
+		System.out.println("\nScores for cells: ");
+//		for (int i = 0; i < 7; ++i) {
+//			for (int j = 0; j < 7; ++j) {
+//				if (grid[i][j] != null)
+//					System.out.printf("%-3d ", grid[i][j].f);
+//				else
+//					System.out.print("BL  ");
+//			}
+//			System.out.println();
+//		}
+//		System.out.println();
+		
+		if (closed[endI][endJ]) {
+			// Trace back the path
+//			System.out.println("Path: ");
+			Tile current = grid[endI][endJ];
+//			System.out.print(current);
+			String path = reversePath(current);
+//			System.out.println(path);
+			movePath(path);
+		} else {
+			System.out.println("No possible path");
+		}
+	}
+
+	public void movePath(String path) {
+		for (int i = 0; i < path.length(); i++) {
+//			System.out.println(path.charAt(i));
+			System.out.println("Astar move "+String.valueOf(path.charAt(i)));
+			move(String.valueOf(path.charAt(i)));
+			try {
+				Thread.sleep(sleepTime);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public String reversePath(Tile current) {
+		String path = "";
+		while (current.parent != null) {
+			if (current.x == current.parent.x) {
+				if (current.y < current.parent.y) {
+
+					path = "N" + path;
+				} else {
+					path = "S" + path;
+				}
+			} else if (current.y == current.parent.y) {
+				if (current.x < current.parent.x) {
+					path = "W" + path;
+				} else {
+					path = "E" + path;
+				}
+			}
+
+//			System.out.print(" -> " + current.parent);
+			current = current.parent;
+		}
+		return path;
+	}
+
+	public void initialiseBlocked(MapTile scanMapTiles[][]) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+//		System.out.println("scan sand function");
+		for (int i = 0; i < scanMapTiles.length; i++) {
+			for (int j = 0; j < scanMapTiles.length; j++) {
+				blocked[i][j] = false;
+				closed[i][j] = false;
+
+			}
+		}
+	}
+
+	public void makeAStarmove(MapTile[][] scanMapTiles, Coord currentLoc, Coord destination) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+
+		int xpos, ypos;
+		int coordX = currentLoc.xpos - centerIndex;
+		int coordY = currentLoc.ypos - centerIndex;
+
+		int a = 6, b = 6;
+		double d = Integer.MAX_VALUE;
+
+		for (int i = 0; i < 7; i++) {
+//
+//			System.out.println(coordX + 0 + ", " + coordY + i);
+//			System.out.println(coordX + i + ", " + coordY + 0);
+//			System.out.println(coordX + 6 + ", " + coordY + i);
+//			System.out.println(coordX + i + ", " + coordY + 6);
+
+			if (coordX + 0 < 7 && coordY + i < 7 && coordX + 0 > -1 && coordY + i > -1) {
+				if (isValidTile_XY(scanMapTiles, coordX + 0, coordY + i)) {
+					scanMapTiles[coordX + 0][coordY + i].distance = calDist(coordX + 0, coordY + i, destination.xpos,
+							destination.ypos);
+					if (d < scanMapTiles[coordX + 0][coordY + i].distance) {
+						d = scanMapTiles[coordX + 0][coordY + i].distance;
+						a = coordX + 0;
+						b = coordY + i;
+					}
+				} else
+					scanMapTiles[coordX + 0][coordY + i].distance = Integer.MAX_VALUE;
+			}
+			if (coordX + i < 7 && coordY + 0 < 7 && coordX + i > -1 && coordY + 0 > -1) {
+				if (isValidTile_XY(scanMapTiles, coordX + i, coordY + 0)) {
+					scanMapTiles[coordX + i][coordY + 0].distance = calDist(coordX + i, coordY + 0, destination.xpos,
+							destination.ypos);
+					if (d < scanMapTiles[coordX + i][coordY + 0].distance) {
+						d = scanMapTiles[coordX + i][coordY + 0].distance;
+						a = coordX + i;
+						b = coordY + 0;
+					}
+				} else
+					scanMapTiles[coordX + i][coordY + 0].distance = Integer.MAX_VALUE;
+			}
+
+			if (coordX + 6 < 7 && coordY + i < 7 && coordX + 6 > -1 && coordY + i > -1) {
+
+				if (isValidTile_XY(scanMapTiles, coordX + 6, coordY + i)) {
+					scanMapTiles[coordX + 6][coordY + i].distance = calDist(coordX + 6, coordY + i, destination.xpos,
+							destination.ypos);
+					if (d < scanMapTiles[coordX + 6][coordY + i].distance) {
+						d = scanMapTiles[coordX + 6][coordY + i].distance;
+						a = coordX + 6;
+						b = coordY + i;
+					}
+				} else
+					scanMapTiles[coordX + 6][coordY + i].distance = Integer.MAX_VALUE;
+			}
+
+			if (coordX + i < 7 && coordY + 6 < 7 && coordX + i > -1 && coordY + 6 > -1) {
+				if (isValidTile_XY(scanMapTiles, coordX + i, coordY + 6)) {
+					scanMapTiles[coordX + i][coordY + 6].distance = calDist(coordX + i, coordY + 6, destination.xpos,
+							destination.ypos);
+					if (d < scanMapTiles[coordX + i][coordY + 6].distance) {
+						d = scanMapTiles[coordX + i][coordY + 6].distance;
+						a = coordX + i;
+						b = coordY + 6;
+					}
+				} else
+					scanMapTiles[coordX + i][coordY + 6].distance = Integer.MAX_VALUE;
+			}
+		}
+
+		System.out.println("call a star move a and b : " + a + " " + b);
+		callAStar(scanMapTiles, a, b);
+
+	}
+
+	public double calDist(int x1, int y1, int x2, int y2) {
+		double dist;
+
+		dist = Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+		return dist;
 	}
 
 }

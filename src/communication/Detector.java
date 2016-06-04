@@ -5,6 +5,7 @@ import java.util.List;
 
 import common.Coord;
 import common.MapTile;
+import common.ScanMap;
 import enums.Science;
 
 /** Used to detect stuff on the ROVER'S scanned map.
@@ -31,4 +32,5 @@ public interface Detector {
      *            WEST, OR SOUTH
      * @return A list of all the science detected in the scanned map. */
     List<Coord> detectScience(MapTile[][] map, Coord roverCoord, int sightRange);
+    
 }

@@ -9,6 +9,7 @@ public class MapTile {
 	private int elevation;	// not currently used
 	private Science science;	//for use on ScanMap, not used on PlanetMap
 	private boolean hasRover;	//for use on ScanMap, not used on PlanetMap
+	public double distance;
 	
 	
 	public MapTile(){
